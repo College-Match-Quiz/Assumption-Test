@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>College Match Quiz</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-slate-900 text-white min-h-screen flex flex-col justify-between font-sans">
+
+    <!-- Header Navigation -->
+    <header class="border-b border-slate-800 p-6">
+        <div class="max-w-6xl mx-auto flex justify-between items-center">
+            <h1 class="text-2xl font-bold text-indigo-400">Assumption-Test</h1>
+            <nav class="space-x-6 text-slate-300">
+                <a href="/" class="hover:text-white font-medium">Home</a>
+                <a href="/about/" class="hover:text-white font-medium">About Us</a>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Main Content / Quiz Container -->
+    <main class="max-w-3xl mx-auto my-12 p-8 bg-slate-800 rounded-xl shadow-2xl w-full">
+        <h2 class="text-3xl font-extrabold text-slate-100 mb-2">Find Your Ideal College Fit</h2>
+        <p class="text-slate-400 mb-8">Answer a few simple questions to filter out the noise and match with universities tailored to your preferences.</p>
+
+        <!-- Quiz Form -->
+        <form id="quizForm" class="space-y-6">
+            <!-- Question 1: Campus Setting -->
+            <div>
+                <label class="block text-sm font-semibold text-slate-300 mb-2">1. Preferred Campus Environment</label>
+                <select id="setting" class="w-full p-3 rounded-lg bg-slate-700 text-white border border-slate-600 focus:outline-none focus:border-indigo-500">
+                    <option value="urban">Urban (City)</option>
+                    <option value="suburban">Suburban</option>
+                    <option value="rural">Rural</option>
+                </select>
+            </div>
+
+            <!-- Question 2: Preferences / Dealbreakers -->
+            <div>
+                <label class="block text-sm font-semibold text-slate-300 mb-2">2. What are your main preferences or dealbreakers?</label>
+                <div class="space-y-2">
+                    <label class="flex items-center space-x-3 text-slate-300">
+                        <input type="checkbox" value="too_big" class="painPoint rounded bg-slate-700 border-slate-600 text-indigo-500 focus:ring-0">
+                        <span>Avoid large lecture hall classes (>150 students)</span>
+                    </label>
+                    <label class="flex items-center space-x-3 text-slate-300">
+                        <input type="checkbox" value="too_party" class="painPoint rounded bg-slate-700 border-slate-600 text-indigo-500 focus:ring-0">
+                        <span>Avoid major party/Greek-life heavy schools</span>
+                    </label>
+                </div>
+            </div>
+
+            <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-3 rounded-lg transition duration-200">
+                Calculate College Matches
+            </button>
+        </form>
+
+        <!-- Quiz Results Display -->
+        <div id="results" class="mt-8 hidden">
+            <h3 class="text-xl font-bold text-indigo-400 mb-4">Your Top Matches</h3>
+            <div id="matchList" class="space-y-4"></div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="border-t border-slate-800 p-6 text-center text-slate-500 text-sm">
+        &copy; 2026 Assumption-Test. All rights reserved.
+    </footer>
+
+    <!-- Quiz Submission Logic -->
+    <script>
+        document.getElementById('quizForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const setting = document.getElementById('setting').value;
+            const painPoints = Array.from(document.querySelectorAll('.painPoint:checked')).map(cb => cb.value);
+
+            const response = await fetch('/api/match/', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ setting, painPoints })
+            });
+
+            const data = await response.json();
+            const resultsDiv = document.getElementById('results');
+            const matchList = document.getElementById('matchList');
+            
+            matchList.innerHTML = '';
+            
+            if (data.matches && data.matches.length > 0) {
+                data.matches.forEach(item => {
+                    const card = document.createElement('div');
+                    card.className = 'p-4 bg-slate-700 rounded-lg flex justify-between items-center';
+                    card.innerHTML = `
+                        <div>
+                            <p class="font-bold text-slate-100">${item.name}</p>
+                            <p class="text-xs text-slate-400">Transfer Friendly: ${item.transfer_friendly ? 'Yes' : 'No'}</p>
+                        </div>
+                        <span class="text-indigo-400 font-extrabold text-lg">${item.match_score}% Match</span>
+                    `;
+                    matchList.appendChild(card);
+                });
+            } else {
+                matchList.innerHTML = '<p class="text-slate-400">No matching colleges found. Try adjusting your preferences!</p>';
+            }
+
+            resultsDiv.classList.remove('hidden');
+        });
+    </script>
+</body>
+</html>
