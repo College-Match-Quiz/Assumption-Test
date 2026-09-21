@@ -6,36 +6,110 @@
     <title>About Us - College Match</title>
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body class="bg-slate-900 text-white min-h-screen flex flex-col justify-between font-sans">
-
-    <!-- Header Navigation -->
-    <header class="border-b border-slate-800 p-6">
-        <div class="max-w-6xl mx-auto flex justify-between items-center">
-            <h1 class="text-2xl font-bold text-indigo-400">Assumption-Test</h1>
-            <nav class="space-x-6 text-slate-300">
-                <a href="/" class="hover:text-white font-medium">Home</a>
-                <a href="/about/" class="hover:text-white font-medium">About Us</a>
+<body class="bg-slate-950 text-slate-100 min-h-screen font-sans antialiased">
+    <header class="border-b border-slate-800/80 bg-slate-900/80 backdrop-blur-sm sticky top-0 z-10">
+        <div class="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between">
+            <div class="flex items-center gap-3">
+                <div class="w-2.5 h-2.5 rounded-full bg-indigo-400"></div>
+                <h1 class="text-xl font-bold tracking-tight text-white">Assumption-Test</h1>
+            </div>
+            <nav class="flex items-center gap-6 text-sm text-slate-300">
+                <a href="/" class="transition hover:text-white">Home</a>
+                <a href="/about/" class="font-medium text-white">About Us</a>
             </nav>
         </div>
     </header>
 
-    <!-- Main Content -->
-    <main class="max-w-4xl mx-auto my-12 p-8 bg-slate-800 rounded-xl shadow-2xl w-full">
-        <h2 class="text-3xl font-extrabold text-slate-100 mb-4">About Our Matching System</h2>
-        <p class="text-slate-300 leading-relaxed mb-6">
-            Finding the right college shouldn't mean scrolling through endless promotional brochures. 
-            Our platform uses algorithmic matching to cut through marketing fluff and pair students with higher education institutions that match their environment, learning preferences, and social comfort levels.
-        </p>
-        <h3 class="text-xl font-bold text-indigo-400 mb-2">Our Goal</h3>
-        <p class="text-slate-300 leading-relaxed">
-            By analyzing key metrics such as class sizing, location settings, and transfer friendliness, we give high school graduates and transfer students direct, unbiased rankings tailored specifically to their needs.
-        </p>
+    <main class="max-w-6xl mx-auto px-6 pt-12 pb-16">
+        <section class="mb-10">
+            <div class="inline-flex items-center rounded-full border border-indigo-500/30 bg-indigo-500/10 px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] text-indigo-300">
+                About our platform
+            </div>
+            <h2 class="mt-6 text-4xl md:text-5xl font-bold tracking-tight text-white">
+                Helping students find the right college fit with confidence.
+            </h2>
+            <p class="mt-5 max-w-3xl text-lg leading-8 text-slate-300">
+                Assumption-Test was built to make the college decision process clearer, smarter, and more personal.
+                Instead of relying on generic rankings or polished marketing, we focus on what actually matters to students:
+                academic goals, campus culture, learning environment, affordability, and long-term fit.
+            </p>
+        </section>
+
+        <section class="grid lg:grid-cols-3 gap-6 mb-12">
+            <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-lg shadow-slate-950/20">
+                <div class="text-indigo-400 text-2xl mb-4">01</div>
+                <h3 class="text-xl font-semibold text-white mb-3">Purpose</h3>
+                <p class="text-slate-300 leading-7">
+                    We help students compare schools based on their real priorities rather than surface-level reputation.
+                </p>
+            </div>
+
+            <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-lg shadow-slate-950/20">
+                <div class="text-indigo-400 text-2xl mb-4">02</div>
+                <h3 class="text-xl font-semibold text-white mb-3">Decision-making</h3>
+                <p class="text-slate-300 leading-7">
+                    Our matching approach considers academics, social environment, cost, setting, and student needs.
+                </p>
+            </div>
+
+            <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-lg shadow-slate-950/20">
+                <div class="text-indigo-400 text-2xl mb-4">03</div>
+                <h3 class="text-xl font-semibold text-white mb-3">Outcome</h3>
+                <p class="text-slate-300 leading-7">
+                    The goal is simple: help students choose schools where they are more likely to thrive and succeed.
+                </p>
+            </div>
+        </section>
+
+        <section class="bg-slate-900 border border-slate-800 rounded-3xl p-8 md:p-10 mb-12">
+            <h3 class="text-2xl font-bold text-white mb-4">Our Mission</h3>
+            <p class="text-slate-300 leading-8 text-lg">
+                Our mission is to give students clarity in one of the biggest decisions of their lives. We use structured guidance and personalized matching to move beyond generic advice and toward recommendations that reflect each student’s goals, values, and realistic constraints.
+            </p>
+        </section>
+
+        <section class="grid md:grid-cols-2 gap-8 mb-12">
+            <div class="bg-slate-900 border border-slate-800 rounded-2xl p-8">
+                <h3 class="text-xl font-semibold text-indigo-300 mb-4">What We Help With</h3>
+                <ul class="space-y-3 text-slate-300 leading-7 list-disc pl-5">
+                    <li>Finding schools that align with academic interests and career goals</li>
+                    <li>Comparing campus environment, class size, and social culture</li>
+                    <li>Evaluating affordability, distance from home, and day-to-day practicality</li>
+                    <li>Supporting transfer students with articulation and credit-transfer considerations</li>
+                </ul>
+            </div>
+
+            <div class="bg-slate-900 border border-slate-800 rounded-2xl p-8">
+                <h3 class="text-xl font-semibold text-indigo-300 mb-4">Why It Matters</h3>
+                <p class="text-slate-300 leading-8">
+                    A school should not just be impressive on paper. It should be a place where a student can grow academically, feel supported socially, and make informed decisions about their future. We aim to reduce stress and improve confidence during the college search.
+                </p>
+            </div>
+        </section>
+
+        <section class="mb-4">
+            <h3 class="text-2xl font-bold text-white mb-6">What guides us</h3>
+            <div class="grid md:grid-cols-3 gap-5">
+                <div class="border border-slate-800 rounded-2xl bg-slate-900 p-6">
+                    <h4 class="text-lg font-semibold text-white mb-2">Transparency</h4>
+                    <p class="text-slate-300 leading-7">We explain the reasoning behind recommendations so decisions feel informed, not random.</p>
+                </div>
+                <div class="border border-slate-800 rounded-2xl bg-slate-900 p-6">
+                    <h4 class="text-lg font-semibold text-white mb-2">Personalization</h4>
+                    <p class="text-slate-300 leading-7">Every student has different goals, and every recommendation should reflect that reality.</p>
+                </div>
+                <div class="border border-slate-800 rounded-2xl bg-slate-900 p-6">
+                    <h4 class="text-lg font-semibold text-white mb-2">Accessibility</h4>
+                    <p class="text-slate-300 leading-7">College planning should feel more approachable, not overwhelming or intimidating.</p>
+                </div>
+            </div>
+        </section>
     </main>
 
-    <!-- Footer -->
-    <footer class="border-t border-slate-800 p-6 text-center text-slate-500 text-sm">
-        &copy; 2026 Assumption-Test. All rights reserved.
+    <footer class="border-t border-slate-800 bg-slate-900/70">
+        <div class="max-w-6xl mx-auto px-6 py-6 text-center text-sm text-slate-400">
+            &copy; 2026 Assumption-Test. All rights reserved.
+        </div>
     </footer>
-
 </body>
 </html>
