@@ -5,3 +5,6 @@ def home_page(request):
 
 def about_page(request):
     return render(request, 'about.html')
+
+def quiz_page(request):
+    return render(request, 'quiz.html')

@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>College Match — Quiz</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-slate-950 text-slate-100 min-h-screen font-sans">
+<header class="border-b border-slate-800 bg-slate-900/80">
+    <div class="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between">
+        <h1 class="text-lg font-bold">Assumption-Test</h1>
+        <nav class="text-sm text-slate-300">
+            <a href="/" class="mr-4">Home</a>
+            <a href="/about/">About</a>
+        </nav>
+    </div>
+</header>
+<main class="max-w-4xl mx-auto px-6 py-12">
+    <h2 class="text-2xl font-bold mb-4">Quick match quiz</h2>
+    <p class="text-slate-400 mb-6">Answer a few questions and we'll show your top 5 college matches.</p>
+
+    <form id="quiz-form" class="space-y-4 bg-slate-900 p-6 rounded-lg border border-slate-800">
+        <div>
+            <label class="block text-sm text-slate-300">Track</label>
+            <select id="track" name="track" class="mt-1 w-full rounded-md bg-slate-800 p-2">
+                <option value="freshman">First-time freshman</option>
+                <option value="transfer">Transfer student</option>
+            </select>
+        </div>
+
+        <div>
+            <label class="block text-sm text-slate-300">Preferred setting</label>
+            <select id="setting" name="setting" class="mt-1 w-full rounded-md bg-slate-800 p-2">
+                <option value="any">Any</option>
+                <option value="urban">Urban</option>
+                <option value="suburban">Suburban</option>
+                <option value="rural">Rural</option>
+            </select>
+        </div>
+
+        <div>
+            <label class="block text-sm text-slate-300">Preferred majors (comma separated)</label>
+            <input id="majors" name="majors" class="mt-1 w-full rounded-md bg-slate-800 p-2" placeholder="e.g. Computer Science, Biology" />
+        </div>
+
+        <div>
+            <label class="block text-sm text-slate-300">Party preference</label>
+            <select id="party_pref" name="party_pref" class="mt-1 w-full rounded-md bg-slate-800 p-2">
+                <option value="any">Any</option>
+                <option value="low">Low</option>
+                <option value="high">High</option>
+            </select>
+        </div>
+
+        <div>
+            <label class="block text-sm text-slate-300">Maximum acceptable net price (USD)</label>
+            <input id="max_tuition" type="number" name="max_tuition" class="mt-1 w-full rounded-md bg-slate-800 p-2" placeholder="e.g. 20000" />
+        </div>
+
+        <div id="transfer-pain" class="hidden">
+            <label class="block text-sm text-slate-300">What did you dislike about your previous college? (select all)</label>
+            <div class="mt-2 space-y-2">
+                <label class="flex items-center gap-2"><input type="checkbox" value="too_party" name="painPoints" class="h-4 w-4"> High party culture</label>
+                <label class="flex items-center gap-2"><input type="checkbox" value="too_big" name="painPoints" class="h-4 w-4"> Too large classes</label>
+                <label class="flex items-center gap-2"><input type="checkbox" value="commuter" name="painPoints" class="h-4 w-4"> Mostly commuter campus</label>
+            </div>
+        </div>
+
+        <div>
+            <button id="submit-btn" type="submit" class="rounded-xl bg-indigo-500 px-4 py-2 font-semibold">Get matches</button>
+        </div>
+    </form>
+
+    <section id="results" class="mt-8 hidden">
+        <h3 class="text-xl font-bold mb-4">Top matches</h3>
+        <div id="results-list" class="space-y-4"></div>
+    </section>
+</main>
+
+<script>
+document.getElementById('track').addEventListener('change', function(e){
+    const tr = e.target.value;
+    const el = document.getElementById('transfer-pain');
+    if(tr === 'transfer') el.classList.remove('hidden'); else el.classList.add('hidden');
+});
+
+function collectForm(){
+    const track = document.getElementById('track').value;
+    const setting = document.getElementById('setting').value;
+    const majors = document.getElementById('majors').value.split(',').map(s=>s.trim()).filter(Boolean);
+    const party_pref = document.getElementById('party_pref').value;
+    const max_tuition_raw = document.getElementById('max_tuition').value;
+    const max_tuition = max_tuition_raw ? parseInt(max_tuition_raw,10) : null;
+    const painNodes = document.querySelectorAll('input[name="painPoints"]:checked');
+    const painPoints = Array.from(painNodes).map(n=>n.value);
+    return {track, preferences: {setting: setting==='any'?null:setting, majors, party_pref: party_pref==='any'?null:party_pref, max_tuition}, painPoints};
+}
+
+async function submitQuiz(e){
+    e.preventDefault();
+    const data = collectForm();
+    document.getElementById('submit-btn').disabled = true;
+    const res = await fetch('/api/match/', {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(data)});
+    const json = await res.json();
+    document.getElementById('submit-btn').disabled = false;
+    if(json && json.matches){
+        const list = document.getElementById('results-list');
+        list.innerHTML = '';
+        json.matches.forEach(m=>{
+            const card = document.createElement('div');
+            card.className = 'p-4 rounded-lg bg-slate-900 border border-slate-800';
+            card.innerHTML = `
+                <div class="flex items-center justify-between mb-2">
+                    <div class="text-lg font-semibold">${m.name}</div>
+                    <div class="text-indigo-300 font-semibold">${m.match_percentage}%</div>
+                </div>
+                <div class="text-sm text-slate-300 mb-2">${m.explanation}</div>
+                <div class="flex gap-4">
+                    <div>
+                        <div class="text-xs text-slate-400">Matches</div>
+                        <ul class="mt-1 text-sm text-slate-200">${(m.matching_factors||[]).map(f=>`<li>${f}</li>`).join('') || '<li>—</li>'}</ul>
+                    </div>
+                    <div>
+                        <div class="text-xs text-slate-400">Mismatches</div>
+                        <ul class="mt-1 text-sm text-slate-200">${(m.mismatches||[]).map(f=>`<li>${f}</li>`).join('') || '<li>—</li>'}</ul>
+                    </div>
+                </div>
+            `;
+            list.appendChild(card);
+        });
+        document.getElementById('results').classList.remove('hidden');
+        window.scrollTo({top: document.getElementById('results').offsetTop - 40, behavior:'smooth'});
+    } else {
+        alert('No matches returned');
+    }
+}
+
+document.getElementById('quiz-form').addEventListener('submit', submitQuiz);
+</script>
+</body>
+</html>
