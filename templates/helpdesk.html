@@ -2,11 +2,49 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Contact Us | Assumption-Test</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>body { font-family: 'Inter', sans-serif; } .font-display { font-family: 'Fraunces', serif; }</style>
 </head>
-<body class="bg-slate-900 text-white min-h-screen p-8">
-    <h1 class="text-3xl font-bold text-indigo-400">Contact Us</h1>
-    <p class="mt-2 text-slate-300">Have a question about Assumption-Test or your college search? We’d be glad to hear from you.</p>
+<body class="min-h-screen bg-[#F1F3F4] text-slate-800 antialiased">
+    <header class="sticky top-0 z-10 border-b border-slate-200/80 bg-[#F1F3F4]/95 backdrop-blur-sm">
+        <div class="mx-auto max-w-6xl px-4 py-4 sm:px-6">
+            <div class="relative flex flex-wrap items-center justify-between gap-y-3">
+                <a href="/" class="font-display flex items-center gap-2.5 text-xl font-bold text-slate-900">
+                    <span class="flex h-8 w-8 items-center justify-center rounded-full bg-[#82938F] text-sm text-[#2D3648]">A</span>
+                    Assumption-Test
+                </a>
+                <nav aria-label="Main navigation" class="order-3 flex w-full flex-wrap items-center gap-x-4 gap-y-2 text-xs font-medium text-slate-600 lg:absolute lg:left-1/2 lg:top-1/2 lg:order-none lg:w-auto lg:-translate-x-1/2 lg:-translate-y-1/2 lg:flex-nowrap lg:gap-6 lg:text-sm">
+                    <a href="/" class="transition hover:text-slate-900">Home</a>
+                    <a href="/about/" class="transition hover:text-slate-900">About Us</a>
+                    <a href="/terms/" class="transition hover:text-slate-900">Terms of Agreements</a>
+                    <a href="/contact/" class="font-semibold text-slate-900">Contact Us</a>
+                </nav>
+            </div>
+        </div>
+    </header>
+    <main class="mx-auto max-w-6xl px-6 py-14 sm:py-20">
+        <section class="grid gap-10 border-b border-slate-200 pb-14 md:grid-cols-[1.2fr_0.8fr] md:items-end md:gap-16 md:pb-20">
+            <div>
+                <p class="inline-flex items-center rounded-full border border-[#A87861]/30 bg-[#A87861]/10 px-3 py-1 text-xs font-semibold uppercase tracking-[0.15em] text-[#865D4D]">We’re here to help</p>
+                <h1 class="font-display mt-6 text-4xl font-bold leading-tight text-slate-900 sm:text-5xl">Contact Us</h1>
+                <p class="mt-5 max-w-2xl text-lg leading-8 text-slate-600">Have a question about Assumption-Test or your college search? We’d be glad to hear from you.</p>
+            </div>
+            <div class="border-l-2 border-[#82938F] pl-6">
+                <p class="font-display text-xl font-semibold text-slate-900">A thoughtful next step</p>
+                <p class="mt-3 leading-7 text-slate-600">Explore how matching works, or start with the priorities that matter to you.</p>
+                <div class="mt-5 flex flex-wrap gap-3">
+                    <a href="/about/" class="inline-flex items-center justify-center rounded-lg border border-slate-300 px-4 py-2.5 text-sm font-semibold text-slate-700 transition hover:bg-white">About Us</a>
+                    <a href="/quiz/" class="inline-flex items-center justify-center rounded-lg bg-[#2D3648] px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-slate-700">Start your match</a>
+                </div>
+            </div>
+        </section>
+    </main>
+    <footer class="border-t border-slate-200 px-6 py-6 text-center text-sm text-slate-500">
+        &copy; 2026 Assumption-Test. All rights reserved.
+    </footer>
 </body>
 </html>

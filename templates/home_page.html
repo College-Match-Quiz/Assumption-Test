@@ -10,39 +10,29 @@
     <style>
         body { font-family: 'Inter', sans-serif; }
         .font-display { font-family: 'Fraunces', serif; }
-        @keyframes float {
-            0%, 100% { transform: translateY(0px) rotate(-4deg); }
-            50% { transform: translateY(-10px) rotate(-1deg); }
-        }
-        .float-cap { animation: float 5s ease-in-out infinite; }
-        @keyframes floatSlow {
-            0%, 100% { transform: translateY(0px); }
-            50% { transform: translateY(-8px); }
-        }
-        .float-slow { animation: floatSlow 6s ease-in-out infinite; }
     </style>
 </head>
-<body class="bg-[#FBF7EF] text-slate-800 min-h-screen antialiased">
-    <header class="border-b border-slate-200/80 bg-[#FBF7EF]/90 backdrop-blur-sm sticky top-0 z-10">
+<body class="bg-[#F1F3F4] text-slate-800 min-h-screen antialiased">
+    <header class="border-b border-slate-200/80 bg-[#F1F3F4]/90 backdrop-blur-sm sticky top-0 z-10">
         <div class="px-4 py-4 sm:px-6 lg:px-8">
-            <div class="flex items-center justify-start relative">
+            <div class="relative flex flex-wrap items-center justify-between gap-y-3">
                 <div class="flex items-center gap-2.5 pr-6">
                     <svg width="28" height="28" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <circle cx="20" cy="20" r="20" fill="#5EC5B6"/>
+                        <circle cx="20" cy="20" r="20" fill="#82938F"/>
                         <path d="M20 12L31 17L20 22L9 17L20 12Z" fill="#2D3648"/>
                         <path d="M14 19.5V25C14 25 16.5 27 20 27C23.5 27 26 25 26 25V19.5" stroke="#2D3648" stroke-width="1.3" fill="none"/>
-                        <path d="M29 17.5V23.5" stroke="#E8895C" stroke-width="1.5" stroke-linecap="round"/>
-                        <circle cx="29" cy="24.5" r="1.2" fill="#E8895C"/>
+                        <path d="M29 17.5V23.5" stroke="#A87861" stroke-width="1.5" stroke-linecap="round"/>
+                        <circle cx="29" cy="24.5" r="1.2" fill="#A87861"/>
                     </svg>
                     <h1 class="text-xl font-bold tracking-tight text-slate-900 whitespace-nowrap font-display">Assumption-Test</h1>
                 </div>
-                <nav class="absolute left-1/2 -translate-x-1/2 flex items-center gap-6 text-sm text-slate-600 font-medium">
+                <nav class="order-3 flex w-full flex-wrap items-center gap-x-4 gap-y-2 text-xs font-medium text-slate-600 lg:absolute lg:left-1/2 lg:top-1/2 lg:order-none lg:w-auto lg:-translate-x-1/2 lg:-translate-y-1/2 lg:flex-nowrap lg:gap-6 lg:text-sm">
                     <a href="/" class="text-slate-900 font-semibold">Home</a>
                     <a href="/about/" class="hover:text-slate-900 transition">About Us</a>
                     <a href="/terms/" class="hover:text-slate-900 transition">Terms of Agreements</a>
                     <a href="/contact/" class="hover:text-slate-900 transition">Contact Us</a>
                 </nav>
-                <div class="ml-auto flex items-center gap-2">
+                <div class="order-2 ml-auto flex items-center gap-1 sm:gap-2">
                     <a href="/login/" class="inline-flex items-center justify-center rounded-lg px-3 py-2 text-sm font-semibold text-slate-700 transition hover:bg-white">Log in</a>
                     <a href="/signup/" class="inline-flex items-center justify-center rounded-lg bg-[#2D3648] px-4 py-2 text-sm font-semibold text-white transition hover:bg-slate-700">Sign up</a>
                 </div>
@@ -54,15 +44,14 @@
         <section class="max-w-6xl w-full mx-auto px-6 pt-14 pb-16 lg:pt-20 lg:pb-24">
             <div class="grid lg:grid-cols-2 gap-12 items-center">
                 <div>
-                    <div class="inline-flex items-center rounded-full border border-[#5EC5B6]/40 bg-[#5EC5B6]/15 px-3 py-1 text-xs font-semibold uppercase tracking-[0.15em] text-[#2b8a7c]">
-                        Smarter college decisions
+                    <div class="inline-flex items-center rounded-full border border-[#82938F]/40 bg-[#82938F]/15 px-3 py-1 text-xs font-semibold uppercase tracking-[0.15em] text-[#506963]">
+                        College search dashboard
                     </div>
                     <h2 class="mt-6 text-4xl md:text-5xl font-bold tracking-tight leading-[1.1] text-slate-900 font-display">
-                        Find schools that fit <span class="text-[#E8895C]">you</span>, not just the rankings.
+                        College search, organized around you.
                     </h2>
                     <p class="mt-5 text-lg leading-8 text-slate-600">
-                        Assumption-Test helps students compare schools based on their academic goals,
-                        lifestyle preferences, campus culture, and practical needs so the decision feels clearer and more personal.
+                        Set your academic, campus, and budget priorities to get a focused set of schools to explore.
                     </p>
                     <div class="mt-8 flex flex-col sm:flex-row gap-4">
                         <a href="/quiz/" class="inline-flex items-center justify-center rounded-xl bg-[#2D3648] px-6 py-3 text-base font-semibold text-white shadow-lg shadow-slate-900/10 hover:bg-slate-700 transition">
@@ -79,85 +68,36 @@
                     </div>
                 </div>
 
-                <div class="relative flex items-center justify-center">
-                    <!-- Decorative floating cap illustration -->
-                    <div class="absolute -top-8 -right-2 sm:right-6 z-20 float-cap">
-                        <svg width="92" height="92" viewBox="0 0 92 92" fill="none" xmlns="http://www.w3.org/2000/svg">
-                            <circle cx="46" cy="46" r="46" fill="#5EC5B6"/>
-                            <path d="M46 26L70 37L46 48L22 37L46 26Z" fill="#2D3648"/>
-                            <path d="M32 41V54C32 54 38 59 46 59C54 59 60 54 60 54V41" stroke="#2D3648" stroke-width="2.2" fill="none" stroke-linecap="round"/>
-                            <path d="M64 37V50" stroke="#E8895C" stroke-width="2.4" stroke-linecap="round"/>
-                            <circle cx="64" cy="52.5" r="2.4" fill="#E8895C"/>
-                        </svg>
+                <div class="w-full max-w-lg rounded-lg border border-slate-200 bg-white shadow-sm">
+                    <div class="border-b border-slate-200 px-5 py-4 sm:px-6">
+                        <p class="text-xs font-semibold uppercase tracking-[0.12em] text-[#506963]">Your search framework</p>
+                        <h3 class="font-display mt-2 text-xl font-semibold text-slate-900">Compare what matters</h3>
                     </div>
-                    <div class="absolute -bottom-6 -left-6 z-0 float-slow opacity-90">
-                        <svg width="56" height="56" viewBox="0 0 56 56" fill="none" xmlns="http://www.w3.org/2000/svg">
-                            <circle cx="28" cy="28" r="28" fill="#F3D998"/>
-                            <rect x="16" y="18" width="24" height="20" rx="2" fill="#2D3648"/>
-                            <rect x="19" y="22" width="18" height="2" fill="#F3D998"/>
-                            <rect x="19" y="27" width="14" height="2" fill="#F3D998"/>
-                            <rect x="19" y="32" width="10" height="2" fill="#F3D998"/>
-                        </svg>
-                    </div>
-
-                    <div class="w-full max-w-sm rounded-3xl border border-slate-200 bg-white p-6 shadow-2xl shadow-slate-900/5">
-                        <div class="rounded-2xl border border-slate-100 bg-[#FBF7EF] p-6">
-                            <div class="flex items-center justify-between mb-6">
-                                <div>
-                                    <p class="text-sm text-slate-500">Student profile</p>
-                                    <h3 class="text-xl font-semibold text-slate-900 font-display">Academic fit overview</h3>
-                                </div>
-                                <span class="rounded-full bg-[#5EC5B6]/15 px-2.5 py-1 text-xs font-medium text-[#2b8a7c] whitespace-nowrap">Strong match</span>
-                            </div>
-
-                            <div class="space-y-5">
-                                <div>
-                                    <div class="flex justify-between text-sm text-slate-600 mb-2">
-                                        <span>Campus vibe</span>
-                                        <span>86%</span>
-                                    </div>
-                                    <div class="h-2.5 rounded-full bg-slate-200">
-                                        <div class="h-2.5 rounded-full bg-[#5EC5B6]" style="width: 86%;"></div>
-                                    </div>
-                                </div>
-                                <div>
-                                    <div class="flex justify-between text-sm text-slate-600 mb-2">
-                                        <span>Academic fit</span>
-                                        <span>91%</span>
-                                    </div>
-                                    <div class="h-2.5 rounded-full bg-slate-200">
-                                        <div class="h-2.5 rounded-full bg-[#5EC5B6]" style="width: 91%;"></div>
-                                    </div>
-                                </div>
-                                <div>
-                                    <div class="flex justify-between text-sm text-slate-600 mb-2">
-                                        <span>Cost & value</span>
-                                        <span>78%</span>
-                                    </div>
-                                    <div class="h-2.5 rounded-full bg-slate-200">
-                                        <div class="h-2.5 rounded-full bg-[#5EC5B6]" style="width: 78%;"></div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div class="mt-8 border-t border-slate-200 pt-5">
-                                <p class="text-sm text-slate-500 mb-3">Top recommended schools</p>
-                                <div class="space-y-3">
-                                    <div class="flex items-center justify-between rounded-xl bg-white border border-slate-100 px-4 py-3">
-                                        <span class="font-medium text-slate-900">Northwood State</span>
-                                        <span class="text-[#2b8a7c] font-semibold">92%</span>
-                                    </div>
-                                    <div class="flex items-center justify-between rounded-xl bg-white border border-slate-100 px-4 py-3">
-                                        <span class="font-medium text-slate-900">Evergreen University</span>
-                                        <span class="text-[#2b8a7c] font-semibold">88%</span>
-                                    </div>
-                                    <div class="flex items-center justify-between rounded-xl bg-white border border-slate-100 px-4 py-3">
-                                        <span class="font-medium text-slate-900">Hillside College</span>
-                                        <span class="text-[#2b8a7c] font-semibold">84%</span>
-                                    </div>
-                                </div>
+                    <div class="divide-y divide-slate-200 px-5 sm:px-6">
+                        <div class="grid grid-cols-[2rem_1fr] gap-3 py-4">
+                            <span class="text-sm font-semibold text-[#506963]">01</span>
+                            <div>
+                                <h4 class="font-semibold text-slate-900">Academic direction</h4>
+                                <p class="mt-1 text-sm leading-6 text-slate-600">Programs, interests, and learning preferences.</p>
                             </div>
                         </div>
+                        <div class="grid grid-cols-[2rem_1fr] gap-3 py-4">
+                            <span class="text-sm font-semibold text-[#8B6250]">02</span>
+                            <div>
+                                <h4 class="font-semibold text-slate-900">Campus experience</h4>
+                                <p class="mt-1 text-sm leading-6 text-slate-600">Setting, community, and day-to-day environment.</p>
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-[2rem_1fr] gap-3 py-4">
+                            <span class="text-sm font-semibold text-[#81765D]">03</span>
+                            <div>
+                                <h4 class="font-semibold text-slate-900">Cost and logistics</h4>
+                                <p class="mt-1 text-sm leading-6 text-slate-600">Budget, location, and practical constraints.</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="border-t border-slate-200 px-5 py-4 sm:px-6">
+                        <a href="/quiz/" class="text-sm font-semibold text-[#506963] transition hover:text-slate-900">Set your priorities <span aria-hidden="true">&rarr;</span></a>
                     </div>
                 </div>
             </div>
@@ -166,12 +106,12 @@
         <section id="get-started" class="bg-[#2D3648] w-full">
             <div class="max-w-6xl mx-auto px-6 py-16 relative">
                 <svg class="absolute right-6 top-4 opacity-90 hidden md:block" width="60" height="60" viewBox="0 0 60 60" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <circle cx="30" cy="30" r="30" fill="#E8895C"/>
+                    <circle cx="30" cy="30" r="30" fill="#A87861"/>
                     <path d="M20 32L27 39L41 23" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
                 </svg>
                 <div class="flex flex-col md:flex-row items-center justify-between gap-8">
                     <div>
-                        <p class="text-sm uppercase tracking-[0.15em] text-[#5EC5B6]">Get started</p>
+                        <p class="text-sm uppercase tracking-[0.15em] text-[#82938F]">Get started</p>
                         <h3 class="mt-3 text-3xl font-bold text-white font-display">Start with your priorities, not a generic list.</h3>
                     </div>
                     <a href="/about/" class="inline-flex items-center justify-center rounded-xl bg-white px-6 py-3 text-base font-semibold text-slate-900 hover:bg-slate-100 transition whitespace-nowrap">
@@ -183,36 +123,36 @@
 
         <section class="max-w-6xl mx-auto px-6 py-20">
             <div class="text-center max-w-3xl mx-auto mb-12">
-                <p class="text-sm uppercase tracking-[0.15em] text-[#2b8a7c]">Why students use it</p>
+                <p class="text-sm uppercase tracking-[0.15em] text-[#506963]">Why students use it</p>
                 <h3 class="mt-4 text-3xl font-bold text-slate-900 font-display">A better way to explore your college options</h3>
             </div>
 
             <div class="grid md:grid-cols-3 gap-6">
                 <div class="rounded-2xl border border-slate-200 bg-white p-6 hover:shadow-lg hover:-translate-y-1 transition-all">
-                    <div class="w-14 h-14 rounded-2xl bg-[#5EC5B6]/15 flex items-center justify-center mb-4">
+                    <div class="w-14 h-14 rounded-2xl bg-[#82938F]/15 flex items-center justify-center mb-4">
                         <svg width="26" height="26" viewBox="0 0 26 26" fill="none" xmlns="http://www.w3.org/2000/svg">
-                            <circle cx="13" cy="9" r="3.5" stroke="#2b8a7c" stroke-width="1.8"/>
-                            <path d="M13 15C8 15 5 18 5 21.5H21C21 18 18 15 13 15Z" stroke="#2b8a7c" stroke-width="1.8" fill="none"/>
-                            <circle cx="13" cy="13" r="10.5" stroke="#2b8a7c" stroke-width="1.4" stroke-dasharray="2 3"/>
+                            <circle cx="13" cy="9" r="3.5" stroke="#506963" stroke-width="1.8"/>
+                            <path d="M13 15C8 15 5 18 5 21.5H21C21 18 18 15 13 15Z" stroke="#506963" stroke-width="1.8" fill="none"/>
+                            <circle cx="13" cy="13" r="10.5" stroke="#506963" stroke-width="1.4" stroke-dasharray="2 3"/>
                         </svg>
                     </div>
                     <h4 class="text-xl font-semibold text-slate-900 mb-3 font-display">Focused on fit</h4>
                     <p class="text-slate-600 leading-7">Prioritize what matters most to you, from academics to campus culture and lifestyle.</p>
                 </div>
                 <div class="rounded-2xl border border-slate-200 bg-white p-6 hover:shadow-lg hover:-translate-y-1 transition-all">
-                    <div class="w-14 h-14 rounded-2xl bg-[#E8895C]/15 flex items-center justify-center mb-4">
+                    <div class="w-14 h-14 rounded-2xl bg-[#A87861]/15 flex items-center justify-center mb-4">
                         <svg width="26" height="26" viewBox="0 0 26 26" fill="none" xmlns="http://www.w3.org/2000/svg">
-                            <rect x="4" y="6" width="18" height="14" rx="2" stroke="#c9663a" stroke-width="1.8"/>
-                            <path d="M8 11H18M8 15H14" stroke="#c9663a" stroke-width="1.8" stroke-linecap="round"/>
+                            <rect x="4" y="6" width="18" height="14" rx="2" stroke="#8B6250" stroke-width="1.8"/>
+                            <path d="M8 11H18M8 15H14" stroke="#8B6250" stroke-width="1.8" stroke-linecap="round"/>
                         </svg>
                     </div>
                     <h4 class="text-xl font-semibold text-slate-900 mb-3 font-display">Clear decision support</h4>
                     <p class="text-slate-600 leading-7">See how schools match your goals through transparent scoring and recommendations.</p>
                 </div>
                 <div class="rounded-2xl border border-slate-200 bg-white p-6 hover:shadow-lg hover:-translate-y-1 transition-all">
-                    <div class="w-14 h-14 rounded-2xl bg-[#F3D998]/40 flex items-center justify-center mb-4">
+                    <div class="w-14 h-14 rounded-2xl bg-[#B7AE97]/40 flex items-center justify-center mb-4">
                         <svg width="26" height="26" viewBox="0 0 26 26" fill="none" xmlns="http://www.w3.org/2000/svg">
-                            <path d="M13 3L15.5 9.5L22 10.5L17.5 15L18.7 21.5L13 18.3L7.3 21.5L8.5 15L4 10.5L10.5 9.5L13 3Z" stroke="#a8792a" stroke-width="1.6" stroke-linejoin="round" fill="none"/>
+                            <path d="M13 3L15.5 9.5L22 10.5L17.5 15L18.7 21.5L13 18.3L7.3 21.5L8.5 15L4 10.5L10.5 9.5L13 3Z" stroke="#81765D" stroke-width="1.6" stroke-linejoin="round" fill="none"/>
                         </svg>
                     </div>
                     <h4 class="text-xl font-semibold text-slate-900 mb-3 font-display">Simpler planning</h4>

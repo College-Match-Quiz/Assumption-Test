@@ -5,38 +5,50 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Terms of Agreements | Assumption-Test</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>body { font-family: 'Inter', sans-serif; } .font-display { font-family: 'Fraunces', serif; }</style>
 </head>
-<body class="bg-slate-900 text-white min-h-screen flex flex-col justify-between font-sans">
-
-    <!-- Header Navigation -->
-    <header class="border-b border-slate-800 p-6">
-        <div class="max-w-6xl mx-auto flex justify-between items-center">
-            <h1 class="text-2xl font-bold text-indigo-400">Assumption-Test</h1>
-            <nav class="space-x-6 text-slate-300">
-                <a href="/" class="hover:text-white font-medium">Home</a>
-                <a href="/about/" class="hover:text-white font-medium">About Us</a>
-                <a href="/contact/" class="hover:text-white font-medium">Contact Us</a>
-                <a href="/terms/" class="hover:text-white font-medium">Terms of Agreements</a>
-            </nav>
+<body class="flex min-h-screen flex-col bg-[#F1F3F4] text-slate-800 antialiased">
+    <header class="sticky top-0 z-10 border-b border-slate-200/80 bg-[#F1F3F4]/95 backdrop-blur-sm">
+        <div class="mx-auto max-w-6xl px-4 py-4 sm:px-6">
+            <div class="relative flex flex-wrap items-center justify-between gap-y-3">
+                <a href="/" class="font-display flex items-center gap-2.5 text-xl font-bold text-slate-900">
+                    <span class="flex h-8 w-8 items-center justify-center rounded-full bg-[#82938F] text-sm text-[#2D3648]">A</span>
+                    Assumption-Test
+                </a>
+                <nav aria-label="Main navigation" class="order-3 flex w-full flex-wrap items-center gap-x-4 gap-y-2 text-xs font-medium text-slate-600 lg:absolute lg:left-1/2 lg:top-1/2 lg:order-none lg:w-auto lg:-translate-x-1/2 lg:-translate-y-1/2 lg:flex-nowrap lg:gap-6 lg:text-sm">
+                    <a href="/" class="transition hover:text-slate-900">Home</a>
+                    <a href="/about/" class="transition hover:text-slate-900">About Us</a>
+                    <a href="/terms/" class="font-semibold text-slate-900">Terms of Agreements</a>
+                    <a href="/contact/" class="transition hover:text-slate-900">Contact Us</a>
+                </nav>
         </div>
     </header>
 
-    <!-- Main Content -->
-    <main class="max-w-4xl mx-auto my-12 p-8 bg-slate-800 rounded-xl shadow-2xl w-full">
-        <h2 class="text-3xl font-extrabold text-slate-100 mb-4">Terms of Agreements</h2>
-        <p class="text-slate-300 leading-relaxed mb-4">
-            By accessing and using this site, you accept and agree to be bound by the terms and provisions of this agreement.
+    <main class="mx-auto w-full max-w-4xl flex-1 px-6 py-14 sm:py-20">
+        <div class="mb-5 inline-flex items-center rounded-full border border-[#82938F]/40 bg-[#82938F]/15 px-3 py-1 text-xs font-semibold uppercase tracking-[0.15em] text-[#506963]">
+            Please read
+        </div>
+        <h1 class="font-display max-w-3xl text-4xl font-bold leading-tight text-slate-900 sm:text-5xl">Terms of Agreements</h1>
+        <p class="mt-6 max-w-3xl text-lg leading-8 text-slate-600">
+            By accessing and using Assumption-Test, you agree to these terms. They explain the intended use of the information and matching results provided on this site.
         </p>
-        <h3 class="text-xl font-bold text-indigo-400 mt-6 mb-2">Use of Match Results</h3>
-        <p class="text-slate-300 leading-relaxed">
-            The results provided by our quiz algorithm are intended strictly for educational and informational research purposes. Users should independently verify official college admission requirements and tuition costs directly with each university.
-        </p>
+
+        <section class="mt-12 border-t border-slate-200 py-8">
+            <p class="text-sm font-semibold uppercase tracking-[0.12em] text-[#8B6250]">01 / Match information</p>
+            <h2 class="font-display mt-3 text-2xl font-semibold text-slate-900">Use of Match Results</h2>
+            <p class="mt-4 leading-8 text-slate-600">
+                Results from the college matching quiz are for educational and informational purposes only. They are starting points for research, not admissions decisions or guarantees of fit.
+            </p>
+            <p class="mt-4 leading-8 text-slate-600">
+                College requirements, tuition, and other details can change. Verify current information directly with each university before making decisions.
+            </p>
+        </section>
     </main>
 
-    <!-- Footer -->
-    <footer class="border-t border-slate-800 p-6 text-center text-slate-500 text-sm">
+    <footer class="border-t border-slate-200 px-6 py-6 text-center text-sm text-slate-500">
         &copy; 2026 Assumption-Test. All rights reserved.
     </footer>
-
 </body>
 </html>
