@@ -3,13 +3,96 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Assumption-Test | College Matching Platform</title>
+    <title>Assumption-Test | Find your college fit</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
         body { font-family: 'Inter', sans-serif; }
         .font-display { font-family: 'Fraunces', serif; }
+        :root {
+            color-scheme: dark;
+            --night: #080b11;
+            --panel: #13171e;
+            --muted: #aeb6c3;
+            --blue: #4d99fa;
+            --line: rgba(255,255,255,.12);
+        }
+        html { scroll-behavior: smooth; }
+        body { background: var(--night) !important; color: #f5f6f8 !important; }
+        header { position: relative !important; background: transparent !important; border: 0 !important; }
+        header > div { max-width: 1440px; margin: auto; }
+        header h1 { color: white !important; font-family: 'Inter', sans-serif !important; font-size: 15px !important; }
+        header svg circle:first-child { fill: #357de0; }
+        header nav { color: #c4cad4 !important; }
+        header nav a { padding: 8px 10px; border-radius: 5px; transition: background .2s ease, color .2s ease; }
+        header nav a:hover, header nav a.text-slate-900 { background: rgba(255,255,255,.1); color: white !important; }
+        header .order-2 a:first-child { color: #d8dce3 !important; }
+        header .order-2 a:last-child { background: transparent !important; border: 1px solid rgba(255,255,255,.45); border-radius: 6px !important; }
+        header .order-2 a:last-child:hover { background: rgba(255,255,255,.1) !important; }
+        main { display: block !important; }
+        .home-hero { width: 100% !important; max-width: none !important; padding: 18px max(24px, calc((100vw - 1280px) / 2)) 0 !important; }
+        .home-hero > div { position: relative; display: block !important; min-height: clamp(420px, 50vw, 530px); max-width: 1280px; margin: auto; }
+        .home-copy { position: relative; z-index: 1; width: min(56%, 650px); padding: clamp(46px, 8vw, 100px) 0 42px 28px; animation: arrive .7s both; }
+        .home-copy > div:first-child { padding: 0 !important; border: 0 !important; background: none !important; color: #a9cfff !important; font-size: 11px !important; letter-spacing: .14em; }
+        .home-copy h2 { max-width: 640px; margin-top: 20px !important; color: #f7f8fa !important; font-family: 'Inter', sans-serif !important; font-size: 68px !important; font-weight: 500 !important; letter-spacing: 0 !important; line-height: 1.06 !important; }
+        .home-copy > p { max-width: 440px; color: #b2bac7 !important; font-size: 14px !important; line-height: 1.8 !important; }
+        .home-copy > div:nth-of-type(2) { gap: 12px !important; }
+        .home-copy > div:nth-of-type(2) a:first-child { border: 1px solid #6eb0ff; border-radius: 5px !important; background: linear-gradient(120deg, #4796f3, #2466d8) !important; box-shadow: 0 8px 28px rgba(42,115,221,.2); }
+        .home-copy > div:nth-of-type(2) a:last-child { border: 1px solid rgba(255,255,255,.28) !important; border-radius: 5px !important; background: transparent !important; color: #e3e7ed !important; }
+        .home-copy > div:nth-of-type(2) a:hover { transform: translateY(-2px); }
+        .home-copy > div:last-child { flex-wrap: wrap; gap: 8px 20px !important; color: #9ca6b4 !important; font-size: 11px !important; }
+        .home-art { position: absolute; z-index: 0; top: 0; right: -3%; width: 65%; height: 100%; overflow: hidden; border: 0 !important; border-radius: 0 !important; background: linear-gradient(90deg, var(--night) 0%, rgba(8,11,17,.75) 17%, rgba(8,11,17,.08) 62%, rgba(8,11,17,.12)), linear-gradient(0deg, var(--night), transparent 35%), url('https://images.unsplash.com/photo-1562774053-701939374585?auto=format&fit=crop&w=1800&q=88') center 48% / cover; box-shadow: none !important; animation: image-arrive 1s both; }
+        .home-art > * { visibility: hidden; }
+        #get-started { width: 100%; background: transparent !important; }
+        #get-started > div { display: flex; min-height: 132px; align-items: center; padding: 24px clamp(24px, 5vw, 70px) !important; border: 1px solid rgba(255,255,255,.07); border-radius: 14px; background: linear-gradient(110deg, #15191f, #11151b 60%, #151a22); }
+        #get-started svg { display: none; }
+        #get-started p { color: #8ebeff !important; font-size: 10px !important; font-weight: 700; }
+        #get-started h3 { margin-top: 7px !important; color: #f4f5f7 !important; font-family: 'Inter', sans-serif !important; font-size: 22px !important; font-weight: 500 !important; }
+        .priority-list { display: grid; flex: 1; grid-template-columns: repeat(3, 1fr); }
+        .priority-item { min-height: 54px; padding: 8px 16px; border-left: 1px solid var(--line); }
+        .priority-item span { display: block; color: #7f8999; font-size: 10px; }
+        .priority-item strong { display: block; margin-top: 7px; color: #edf0f5; font-size: 13px; font-weight: 600; }
+        main > section:nth-of-type(3) { padding-top: 86px !important; padding-bottom: 86px !important; }
+        main > section:nth-of-type(3) > div:first-child p { color: #91bdff !important; }
+        main > section:nth-of-type(3) h3, main > section:nth-of-type(3) h4 { color: #f4f5f7 !important; font-family: 'Inter', sans-serif !important; }
+        main > section:nth-of-type(3) > div:last-child > div { border-color: var(--line) !important; border-radius: 8px !important; background: #11151c !important; }
+        main > section:nth-of-type(3) > div:last-child > div p { color: var(--muted) !important; }
+        footer { border-color: var(--line) !important; background: #0b0e14 !important; }
+        footer > div { color: #8e98a6 !important; }
+        @keyframes arrive { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes image-arrive { from { opacity: .4; transform: scale(1.025); } to { opacity: 1; transform: scale(1); } }
+        @media (max-width: 760px) {
+            header > div { padding: 12px 16px !important; }
+            header > div > div { gap: 10px !important; }
+            header nav { position: absolute !important; z-index: 2; top: 58px; left: 16px; right: 16px; width: auto !important; justify-content: center; gap: 2px !important; padding: 4px; border: 1px solid rgba(255,255,255,.08); border-radius: 7px; background: rgba(24,28,36,.94); }
+            header nav a { padding: 7px 9px; font-size: 11px; }
+            .home-hero { padding: 0 16px !important; }
+            .home-hero > div { min-height: 630px; }
+            .home-art { top: 0; right: -16px; width: calc(100% + 32px); height: 390px; background-image: linear-gradient(0deg, var(--night) 0%, rgba(8,11,17,.08) 55%, rgba(8,11,17,.12)), url('https://images.unsplash.com/photo-1562774053-701939374585?auto=format&fit=crop&w=1200&q=85'); background-position: center, center 48%; }
+            .home-copy { width: 100%; padding: 285px 6px 34px; }
+            .home-copy h2 { max-width: 560px; font-size: 46px !important; }
+            .home-copy > p { font-size: 13px !important; }
+            .home-copy > div:last-child { margin-top: 22px !important; }
+            #get-started { padding: 0 12px; }
+            #get-started > div { flex-direction: column; align-items: flex-start; gap: 20px; }
+            #get-started h3 { font-size: 20px !important; }
+            .priority-list { width: 100%; margin-inline: -8px; }
+            .priority-item { padding-inline: 10px; }
+            .priority-item strong { font-size: 11px; }
+            main > section:nth-of-type(3) { padding: 70px 20px !important; }
+            main > section:nth-of-type(3) > div:last-child { gap: 12px !important; }
+            footer > div { display: flex; justify-content: space-between; gap: 12px; }
+        }
+        @media (max-width: 390px) {
+            header h1 { font-size: 13px !important; }
+            header nav a { padding-inline: 7px; font-size: 10px; }
+            .home-copy > div:nth-of-type(2) { flex-wrap: wrap; }
+            .home-copy h2 { font-size: 42px !important; }
+        }
+        @media (prefers-reduced-motion: reduce) {
+            *, *::before, *::after { scroll-behavior: auto !important; animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; }
+        }
     </style>
 </head>
 <body class="bg-[#F1F3F4] text-slate-800 min-h-screen antialiased">
@@ -41,34 +124,32 @@
     </header>
 
     <main class="flex flex-col items-center justify-start overflow-hidden">
-        <section class="max-w-6xl w-full mx-auto px-6 pt-14 pb-16 lg:pt-20 lg:pb-24">
+        <section class="home-hero max-w-6xl w-full mx-auto px-6 pt-14 pb-16 lg:pt-20 lg:pb-24">
             <div class="grid lg:grid-cols-2 gap-12 items-center">
-                <div>
+            <div class="home-copy">
                     <div class="inline-flex items-center rounded-full border border-[#82938F]/40 bg-[#82938F]/15 px-3 py-1 text-xs font-semibold uppercase tracking-[0.15em] text-[#506963]">
-                        College search dashboard
+                        A more personal college search
                     </div>
                     <h2 class="mt-6 text-4xl md:text-5xl font-bold tracking-tight leading-[1.1] text-slate-900 font-display">
-                        College search, organized around you.
+                        Find the college that fits you.
                     </h2>
                     <p class="mt-5 text-lg leading-8 text-slate-600">
-                        Set your academic, campus, and budget priorities to get a focused set of schools to explore.
+                        Bring your academic goals, campus preferences, and budget into one clear search. Discover schools that make sense for the life you want to build.
                     </p>
                     <div class="mt-8 flex flex-col sm:flex-row gap-4">
                         <a href="/quiz/" class="inline-flex items-center justify-center rounded-xl bg-[#2D3648] px-6 py-3 text-base font-semibold text-white shadow-lg shadow-slate-900/10 hover:bg-slate-700 transition">
-                            Start your match
+                            Build my shortlist <span aria-hidden="true">&rarr;</span>
                         </a>
                         <a href="/about/" class="inline-flex items-center justify-center rounded-xl border-2 border-slate-200 bg-white px-6 py-3 text-base font-semibold text-slate-700 hover:border-slate-300 transition">
-                            Learn more
+                            How matching works
                         </a>
                     </div>
                     <div class="mt-10 flex items-center gap-8 text-sm text-slate-500 font-medium">
-                        <span>Top 5 school matches</span>
-                        <span>Transfer-friendly filters</span>
-                        <span>Fit-focused scoring</span>
+                        <span>Start with what matters to you</span>
                     </div>
                 </div>
 
-                <div class="w-full max-w-lg rounded-lg border border-slate-200 bg-white shadow-sm">
+                <div class="home-art w-full max-w-lg rounded-lg border border-slate-200 bg-white shadow-sm" aria-hidden="true">
                     <div class="border-b border-slate-200 px-5 py-4 sm:px-6">
                         <p class="text-xs font-semibold uppercase tracking-[0.12em] text-[#506963]">Your search framework</p>
                         <h3 class="font-display mt-2 text-xl font-semibold text-slate-900">Compare what matters</h3>
@@ -111,12 +192,14 @@
                 </svg>
                 <div class="flex flex-col md:flex-row items-center justify-between gap-8">
                     <div>
-                        <p class="text-sm uppercase tracking-[0.15em] text-[#82938F]">Get started</p>
-                        <h3 class="mt-3 text-3xl font-bold text-white font-display">Start with your priorities, not a generic list.</h3>
+                        <p class="text-sm uppercase tracking-[0.15em] text-[#82938F]">Make the search yours</p>
+                        <h3 class="mt-3 text-3xl font-bold text-white font-display">Compare more than just a name.</h3>
                     </div>
-                    <a href="/about/" class="inline-flex items-center justify-center rounded-xl bg-white px-6 py-3 text-base font-semibold text-slate-900 hover:bg-slate-100 transition whitespace-nowrap">
-                        Explore the matching approach
-                    </a>
+                    <div class="priority-list" aria-label="College fit criteria">
+                        <div class="priority-item"><span>01 / STUDY</span><strong>Academic fit</strong></div>
+                        <div class="priority-item"><span>02 / PLACE</span><strong>Campus life</strong></div>
+                        <div class="priority-item"><span>03 / PLAN</span><strong>Cost &amp; location</strong></div>
+                    </div>
                 </div>
             </div>
         </section>

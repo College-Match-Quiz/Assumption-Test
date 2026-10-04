@@ -148,3 +148,4 @@ def calculate_matches(request):
 
     results.sort(key=lambda x: x['match_percentage'], reverse=True)
     return Response({'status': 'success', 'matches': results[:5]})
+    

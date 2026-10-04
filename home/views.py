@@ -11,3 +11,4 @@ def terms_page(request):
 
 def quiz_page(request):
     return render(request, 'quiz.html')
+                                                
