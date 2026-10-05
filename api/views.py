@@ -30,7 +30,7 @@ def _explain_factor(college, preferences):
     if party_pref:
         if party_pref == 'low' and (college.party_score or 5) > 7:
             mismatches.append('High party culture')
-        if party_pref == 'high' and (college.party_score or 5) < 4:
+        elif party_pref == 'high' and (college.party_score or 5) < 4:
             mismatches.append('Low party culture')
         else:
             matches.append('Vibe aligns with party preference')
@@ -41,6 +41,12 @@ def _explain_factor(college, preferences):
             matches.append('Estimated net price within budget')
         else:
             mismatches.append('Estimated net price may exceed budget')
+    class_size_max = preferences.get('class_size_max')
+    if class_size_max is not None and college.class_size_avg is not None:
+        if college.class_size_avg <= class_size_max:
+            matches.append('Average class size within your preference')
+        else:
+            mismatches.append('Average class size above your preferred range')
     return matches, mismatches
 
 @api_view(['POST'])
@@ -63,29 +69,33 @@ def calculate_matches(request):
     for college in colleges:
         # compute category scores 0..1
         # academics: preferred majors
-        academics_score = 0.0
+        academics_score = 0.5
         pref_majors = preferences.get('majors', [])
-        if pref_majors and college.majors:
+        if pref_majors:
             college_majors = _parse_majors(college.majors)
             matched = sum(1 for m in pref_majors if m.lower() in college_majors)
             academics_score = min(1.0, matched / max(1, len(pref_majors)))
 
         # campus: setting and residential rate
-        campus_score = 0.0
+        campus_scores = []
         setting_pref = preferences.get('setting')
         if setting_pref and college.setting:
-            campus_score += 0.6 if college.setting == setting_pref else 0.0
+            campus_scores.append(1.0 if college.setting == setting_pref else 0.0)
         if college.residential_rate is not None:
             desired_res = preferences.get('residential_rate')
             if desired_res is not None:
-                # proximity in percentage
-                campus_score += max(0, 1 - abs(college.residential_rate - desired_res) / 100) * 0.4
+                campus_scores.append(max(0, 1 - abs(college.residential_rate - desired_res) / 100))
+        class_size_max = preferences.get('class_size_max')
+        if class_size_max is not None and college.class_size_avg is not None:
+            size_score = 1 - max(0, college.class_size_avg - class_size_max) / max(1, class_size_max)
+            campus_scores.append(max(0.0, size_score))
+        campus_score = sum(campus_scores) / len(campus_scores) if campus_scores else 0.5
 
         # cost
-        cost_score = 0.0
+        cost_score = 0.5
         max_tuition = preferences.get('max_tuition')
         if max_tuition is not None and college.net_price_estimate is not None:
-            cost_score = 1.0 if college.net_price_estimate <= max_tuition else max(0.0, 1 - (college.net_price_estimate - max_tuition) / max_tuition)
+            cost_score = 1.0 if college.net_price_estimate <= max_tuition else max(0.0, 1 - (college.net_price_estimate - max_tuition) / max(1, max_tuition))
 
         # social
         social_score = 0.5

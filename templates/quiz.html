@@ -9,22 +9,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="{% static 'css/site.css' %}">
-    <style>
-        body { font-family: 'Inter', sans-serif; }
-        .font-display { font-family: 'Fraunces', serif; }
-        #quiz-form input:not([type="checkbox"]), #quiz-form select {
-            width: 100%;
-            border: 1px solid #cbd5e1;
-            border-radius: 0.5rem;
-            background: #fff;
-            color: #1e293b;
-            padding: 0.75rem 0.875rem;
-        }
-        #quiz-form input:focus, #quiz-form select:focus {
-            outline: 2px solid #82938F;
-            outline-offset: 2px;
-        }
-    </style>
+    <style>body { font-family: 'Inter', sans-serif; } .font-display { font-family: 'Fraunces', serif; }</style>
 </head>
 <body class="min-h-screen bg-[#F1F3F4] text-slate-800 antialiased">
 <header class="sticky top-0 z-10 border-b border-slate-200/80 bg-[#F1F3F4]/95 backdrop-blur-sm">
@@ -47,134 +32,272 @@
         </div>
     </div>
 </header>
-<main class="mx-auto max-w-4xl px-6 py-12 sm:py-16">
-    <p class="text-xs font-semibold uppercase tracking-[0.15em] text-[#506963]">A few quick questions</p>
-    <h1 class="font-display mt-3 text-3xl font-bold text-slate-900 sm:text-4xl">Find your college match</h1>
-    <p class="mb-8 mt-3 max-w-2xl leading-7 text-slate-600">Share what matters to you, and we’ll show you college options to explore.</p>
+<main class="quiz-shell mx-auto max-w-4xl px-6 py-12 sm:py-16">
+    <p class="text-xs font-semibold uppercase tracking-[0.15em] text-[#506963]">College fit finder / 2 minutes</p>
+    <h1 class="font-display mt-3 text-3xl font-bold text-slate-900 sm:text-4xl">Build your college shortlist.</h1>
+    <p class="mb-8 mt-3 max-w-2xl leading-7 text-slate-600">Choose what matters to you. Skip anything you are unsure about and change answers as you go.</p>
 
-    <div class="quiz-guide" aria-label="What the quiz considers">
-        <div><span>01 / STUDY</span><strong>Academic interests</strong></div>
-        <div><span>02 / PLACE</span><strong>Campus experience</strong></div>
-        <div><span>03 / PLAN</span><strong>Budget &amp; logistics</strong></div>
-    </div>
-
-    <form id="quiz-form" class="space-y-5 rounded-xl border border-slate-200 bg-white p-5 shadow-sm sm:p-8">
-        <div>
-            <label for="track" class="block text-sm font-medium text-slate-700">Track</label>
-            <select id="track" name="track" class="mt-2">
-                <option value="freshman">First-time freshman</option>
-                <option value="transfer">Transfer student</option>
-            </select>
+    <form id="quiz-form" class="quiz-form rounded-xl border border-slate-200 bg-white shadow-sm">
+        <div class="quiz-progress" aria-live="polite">
+            <div class="quiz-progress-copy"><strong id="step-label">Question 1 of 7</strong><span id="step-topic">Your path</span></div>
+            <div class="quiz-progress-track" role="progressbar" aria-label="Quiz progress" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><span class="quiz-progress-fill"></span></div>
         </div>
 
-        <div>
-            <label for="setting" class="block text-sm font-medium text-slate-700">Preferred setting</label>
-            <select id="setting" name="setting" class="mt-2">
-                <option value="any">Any</option>
-                <option value="urban">Urban</option>
-                <option value="suburban">Suburban</option>
-                <option value="rural">Rural</option>
-            </select>
-        </div>
-
-        <div>
-            <label for="majors" class="block text-sm font-medium text-slate-700">Preferred majors (comma separated)</label>
-            <input id="majors" name="majors" class="mt-2" placeholder="e.g. Computer Science, Biology" />
-        </div>
-
-        <div>
-            <label for="party_pref" class="block text-sm font-medium text-slate-700">Party preference</label>
-            <select id="party_pref" name="party_pref" class="mt-2">
-                <option value="any">Any</option>
-                <option value="low">Low</option>
-                <option value="high">High</option>
-            </select>
-        </div>
-
-        <div>
-            <label for="max_tuition" class="block text-sm font-medium text-slate-700">Maximum acceptable net price (USD)</label>
-            <input id="max_tuition" type="number" name="max_tuition" class="mt-2" placeholder="e.g. 20000" />
-        </div>
-
-        <div id="transfer-pain" class="hidden">
-            <label class="block text-sm font-medium text-slate-700">What did you dislike about your previous college? (select all)</label>
-            <div class="mt-2 space-y-2">
-                <label class="flex items-center gap-2 text-sm text-slate-700"><input type="checkbox" value="too_party" name="painPoints" class="h-4 w-4 accent-[#506963]"> High party culture</label>
-                <label class="flex items-center gap-2 text-sm text-slate-700"><input type="checkbox" value="too_big" name="painPoints" class="h-4 w-4 accent-[#506963]"> Too large classes</label>
-                <label class="flex items-center gap-2 text-sm text-slate-700"><input type="checkbox" value="commuter" name="painPoints" class="h-4 w-4 accent-[#506963]"> Mostly commuter campus</label>
+        <fieldset class="quiz-step" data-topic="Your path">
+            <legend>Where are you in your college journey?</legend>
+            <p class="quiz-step-hint">This helps us prioritize first-year or transfer-friendly options.</p>
+            <div class="choice-grid">
+                <label class="choice-card"><input type="radio" name="track" value="freshman" checked><strong>Starting college</strong><span>I am applying as a first-time student.</span></label>
+                <label class="choice-card"><input type="radio" name="track" value="transfer"><strong>Transferring</strong><span>I have attended college before.</span></label>
             </div>
-        </div>
+        </fieldset>
 
-        <div>
-            <button id="submit-btn" type="submit" class="w-full rounded-lg bg-[#2D3648] px-5 py-3 font-semibold text-white transition hover:bg-slate-700 focus:outline-none focus:ring-2 focus:ring-[#82938F] focus:ring-offset-2 sm:w-auto">Get matches</button>
+        <fieldset class="quiz-step" data-topic="What you want to study" hidden>
+            <legend>What would you like to study?</legend>
+            <p class="quiz-step-hint">Choose any areas that interest you. Your picks are compared with each school's listed programs.</p>
+            <div class="major-grid">
+                <label class="choice-card major-choice"><input type="checkbox" name="majorChoice" value="Computer Science"><strong>Computer science</strong></label>
+                <label class="choice-card major-choice"><input type="checkbox" name="majorChoice" value="Business"><strong>Business</strong></label>
+                <label class="choice-card major-choice"><input type="checkbox" name="majorChoice" value="Biology"><strong>Biology</strong></label>
+                <label class="choice-card major-choice"><input type="checkbox" name="majorChoice" value="Engineering"><strong>Engineering</strong></label>
+                <label class="choice-card major-choice"><input type="checkbox" name="majorChoice" value="Psychology"><strong>Psychology</strong></label>
+                <label class="choice-card major-choice"><input type="checkbox" name="majorChoice" value="Nursing"><strong>Nursing</strong></label>
+                <label class="choice-card major-choice"><input type="checkbox" name="majorChoice" value="Education"><strong>Education</strong></label>
+                <label class="choice-card major-choice"><input type="checkbox" name="majorChoice" value="Arts"><strong>Arts &amp; design</strong></label>
+                <label class="choice-card major-choice"><input type="checkbox" name="majorChoice" value="Undecided"><strong>Still exploring</strong></label>
+            </div>
+            <div class="major-other"><label for="major-other">Or add another area</label><input id="major-other" type="text" placeholder="Separate multiple interests with commas" autocomplete="off"></div>
+        </fieldset>
+
+        <fieldset class="quiz-step" data-topic="Campus setting" hidden>
+            <legend>Where would you feel most at home?</legend>
+            <p class="quiz-step-hint">Think about the setting around campus, not just the campus itself.</p>
+            <div class="choice-grid choice-grid-3">
+                <label class="choice-card"><input type="radio" name="setting" value="any" checked><strong>Open to anything</strong><span>Keep every setting in play.</span></label>
+                <label class="choice-card"><input type="radio" name="setting" value="urban"><strong>City</strong><span>Close to an active urban center.</span></label>
+                <label class="choice-card"><input type="radio" name="setting" value="suburban"><strong>Suburban</strong><span>A quieter area near a city.</span></label>
+                <label class="choice-card"><input type="radio" name="setting" value="rural"><strong>Rural</strong><span>More open space and a small-town feel.</span></label>
+            </div>
+        </fieldset>
+
+        <fieldset class="quiz-step" data-topic="Learning environment" hidden>
+            <legend>What class size feels right?</legend>
+            <p class="quiz-step-hint">Smaller classes can mean more personal instruction. Choose a maximum average, or leave it open.</p>
+            <div class="choice-grid choice-grid-3">
+                <label class="choice-card"><input type="radio" name="class_size_max" value="any" checked><strong>No preference</strong><span>Do not filter by class size.</span></label>
+                <label class="choice-card"><input type="radio" name="class_size_max" value="20"><strong>20 or fewer</strong><span>Small classes matter a lot.</span></label>
+                <label class="choice-card"><input type="radio" name="class_size_max" value="35"><strong>35 or fewer</strong><span>A more personal classroom.</span></label>
+                <label class="choice-card"><input type="radio" name="class_size_max" value="50"><strong>50 or fewer</strong><span>Somewhat smaller is a plus.</span></label>
+            </div>
+        </fieldset>
+
+        <fieldset class="quiz-step" data-topic="Campus social life" hidden>
+            <legend>What kind of social scene do you prefer?</legend>
+            <p class="quiz-step-hint">There is no right answer. Pick a vibe that sounds comfortable for you.</p>
+            <div class="choice-grid choice-grid-3">
+                <label class="choice-card"><input type="radio" name="party_pref" value="any" checked><strong>Some of both</strong><span>Keep my options open.</span></label>
+                <label class="choice-card"><input type="radio" name="party_pref" value="low"><strong>Low-key</strong><span>Quieter social life is a plus.</span></label>
+                <label class="choice-card"><input type="radio" name="party_pref" value="high"><strong>High-energy</strong><span>I enjoy a lively scene.</span></label>
+            </div>
+        </fieldset>
+
+        <fieldset class="quiz-step" data-topic="Your budget" hidden>
+            <legend>What yearly cost should we keep in mind?</legend>
+            <p class="quiz-step-hint">We compare against estimated net price, not sticker tuition. Actual aid and costs vary by student.</p>
+            <div class="choice-grid choice-grid-3">
+                <label class="choice-card"><input type="radio" name="max_tuition" value="any" checked><strong>Keep it open</strong><span>No budget cap.</span></label>
+                <label class="choice-card"><input type="radio" name="max_tuition" value="15000"><strong>Up to $15,000</strong><span>Estimated yearly net price.</span></label>
+                <label class="choice-card"><input type="radio" name="max_tuition" value="30000"><strong>Up to $30,000</strong><span>Estimated yearly net price.</span></label>
+                <label class="choice-card"><input type="radio" name="max_tuition" value="50000"><strong>Up to $50,000</strong><span>Estimated yearly net price.</span></label>
+                <label class="choice-card"><input type="radio" name="max_tuition" value="75000"><strong>Up to $75,000</strong><span>Estimated yearly net price.</span></label>
+            </div>
+        </fieldset>
+
+        <fieldset class="quiz-step" data-topic="Campus life" hidden>
+            <legend>How important is living on campus?</legend>
+            <p class="quiz-step-hint">This helps us distinguish residential campuses from commuter-focused ones.</p>
+            <div class="choice-grid choice-grid-3">
+                <label class="choice-card"><input type="radio" name="residential_rate" value="any" checked><strong>No preference</strong><span>Either can work for me.</span></label>
+                <label class="choice-card"><input type="radio" name="residential_rate" value="80"><strong>Very important</strong><span>I want a residential campus.</span></label>
+                <label class="choice-card"><input type="radio" name="residential_rate" value="50"><strong>Somewhat important</strong><span>A mix of commuters and residents.</span></label>
+                <label class="choice-card"><input type="radio" name="residential_rate" value="20"><strong>Not a priority</strong><span>A commuter campus is fine.</span></label>
+            </div>
+        </fieldset>
+
+        <fieldset class="quiz-step" data-topic="Your transfer priorities" data-transfer-only="true" hidden>
+            <legend>What would you like to avoid this time?</legend>
+            <p class="quiz-step-hint">Choose any past experience you do not want repeated. This step only appears for transfer students.</p>
+            <div class="quiz-transfer-options">
+                <label class="choice-card"><input type="checkbox" name="painPoints" value="too_party"><strong>High-pressure party culture</strong></label>
+                <label class="choice-card"><input type="checkbox" name="painPoints" value="too_big"><strong>Very large classes</strong></label>
+                <label class="choice-card"><input type="checkbox" name="painPoints" value="commuter"><strong>A mostly commuter campus</strong></label>
+            </div>
+        </fieldset>
+
+        <div class="quiz-navigation">
+            <button id="back-btn" class="quiz-back" type="button" hidden>Back</button>
+            <span id="step-topic-bottom" aria-hidden="true"></span>
+            <button id="next-btn" class="quiz-next" type="button">Next <span aria-hidden="true">&rarr;</span></button>
+            <button id="submit-btn" class="quiz-submit" type="submit" hidden>Find my matches <span aria-hidden="true">&rarr;</span></button>
         </div>
     </form>
+    <p id="quiz-status" class="quiz-status" role="status" aria-live="polite"></p>
 
-    <section id="results" class="mt-8 hidden">
-        <h2 class="font-display mb-4 text-2xl font-bold text-slate-900">Top matches</h2>
-        <div id="results-list" class="space-y-4"></div>
+    <section id="results" class="mt-8" hidden>
+        <p class="text-xs font-semibold uppercase tracking-[0.15em] text-[#506963]">Your shortlist</p>
+        <h2 class="font-display mb-4 mt-2 text-2xl font-bold text-slate-900">Colleges to explore</h2>
+        <div id="results-list"></div>
+        <button class="quiz-restart" id="restart-btn" type="button">Adjust my answers</button>
     </section>
 </main>
 
 <script>
-document.getElementById('track').addEventListener('change', function(e){
-    const tr = e.target.value;
-    const el = document.getElementById('transfer-pain');
-    if(tr === 'transfer') el.classList.remove('hidden'); else el.classList.add('hidden');
+const form = document.getElementById('quiz-form');
+const allSteps = Array.from(form.querySelectorAll('.quiz-step'));
+const backButton = document.getElementById('back-btn');
+const nextButton = document.getElementById('next-btn');
+const submitButton = document.getElementById('submit-btn');
+const progressTrack = document.querySelector('.quiz-progress-track');
+const progressFill = document.querySelector('.quiz-progress-fill');
+const stepLabel = document.getElementById('step-label');
+const stepTopic = document.getElementById('step-topic');
+const statusMessage = document.getElementById('quiz-status');
+let currentStep = 0;
+
+function activeSteps() {
+    const isTransfer = form.querySelector('input[name="track"]:checked').value === 'transfer';
+    return allSteps.filter(step => step.dataset.transferOnly !== 'true' || isTransfer);
+}
+
+function showStep() {
+    const steps = activeSteps();
+    currentStep = Math.min(currentStep, steps.length - 1);
+    steps.forEach((step, index) => { step.hidden = index !== currentStep; });
+    allSteps.filter(step => !steps.includes(step)).forEach(step => { step.hidden = true; });
+    const isFirst = currentStep === 0;
+    const isLast = currentStep === steps.length - 1;
+    const progress = Math.round(((currentStep + 1) / steps.length) * 100);
+    backButton.hidden = isFirst;
+    nextButton.hidden = isLast;
+    submitButton.hidden = !isLast;
+    stepLabel.textContent = `Question ${currentStep + 1} of ${steps.length}`;
+    stepTopic.textContent = steps[currentStep].dataset.topic;
+    progressTrack.setAttribute('aria-valuenow', String(progress));
+    progressFill.style.width = `${progress}%`;
+}
+
+function collectForm() {
+    const selectedValue = name => form.querySelector(`input[name="${name}"]:checked`).value;
+    const majors = Array.from(form.querySelectorAll('input[name="majorChoice"]:checked'))
+        .map(input => input.value)
+        .filter(value => value !== 'Undecided');
+    const customMajors = document.getElementById('major-other').value.split(',').map(value => value.trim()).filter(Boolean);
+    majors.push(...customMajors);
+    const setting = selectedValue('setting');
+    const partyPreference = selectedValue('party_pref');
+    const maxTuition = selectedValue('max_tuition');
+    const classSize = selectedValue('class_size_max');
+    const residentialRate = selectedValue('residential_rate');
+    const painPoints = Array.from(form.querySelectorAll('input[name="painPoints"]:checked')).map(input => input.value);
+    return {
+        track: selectedValue('track'),
+        preferences: {
+            majors,
+            setting: setting === 'any' ? null : setting,
+            party_pref: partyPreference === 'any' ? null : partyPreference,
+            max_tuition: maxTuition === 'any' ? null : Number(maxTuition),
+            class_size_max: classSize === 'any' ? null : Number(classSize),
+            residential_rate: residentialRate === 'any' ? null : Number(residentialRate)
+        },
+        painPoints
+    };
+}
+
+function addList(parent, title, entries) {
+    const section = document.createElement('div');
+    const heading = document.createElement('strong');
+    heading.textContent = title;
+    section.appendChild(heading);
+    const list = document.createElement('ul');
+    const values = entries.length ? entries : ['No specific notes'];
+    values.forEach(value => {
+        const item = document.createElement('li');
+        item.textContent = value;
+        list.appendChild(item);
+    });
+    section.appendChild(list);
+    parent.appendChild(section);
+}
+
+function renderMatches(matches) {
+    const list = document.getElementById('results-list');
+    list.replaceChildren();
+    if (!matches.length) {
+        const empty = document.createElement('p');
+        empty.className = 'quiz-result';
+        empty.textContent = 'No college matches are available yet. Try again after the school list has been added.';
+        list.appendChild(empty);
+        return;
+    }
+    matches.forEach(match => {
+        const card = document.createElement('article');
+        card.className = 'quiz-result';
+        const heading = document.createElement('div');
+        heading.className = 'quiz-result-head';
+        const name = document.createElement('h3');
+        name.textContent = match.name;
+        const score = document.createElement('span');
+        score.className = 'quiz-result-score';
+        score.textContent = `${match.match_percentage}%`;
+        heading.append(name, score);
+        card.appendChild(heading);
+        const explanation = document.createElement('p');
+        explanation.textContent = match.explanation;
+        card.appendChild(explanation);
+        const notes = document.createElement('div');
+        notes.className = 'grid gap-4 sm:grid-cols-2';
+        addList(notes, 'Aligned with your choices', match.matching_factors || []);
+        addList(notes, 'Worth looking into', match.mismatches || []);
+        card.appendChild(notes);
+        list.appendChild(card);
+    });
+}
+
+backButton.addEventListener('click', () => { currentStep = Math.max(0, currentStep - 1); showStep(); });
+nextButton.addEventListener('click', () => { currentStep = Math.min(activeSteps().length - 1, currentStep + 1); showStep(); });
+form.addEventListener('change', event => {
+    if (event.target.name === 'track') showStep();
+});
+document.getElementById('restart-btn').addEventListener('click', () => {
+    document.getElementById('results').hidden = true;
+    currentStep = 0;
+    showStep();
+    window.scrollTo({ top: form.offsetTop - 30, behavior: 'smooth' });
+});
+form.addEventListener('submit', async event => {
+    event.preventDefault();
+    submitButton.disabled = true;
+    statusMessage.textContent = 'Finding colleges that fit your priorities…';
+    try {
+        const response = await fetch('/api/match/', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(collectForm())
+        });
+        if (!response.ok) throw new Error('The match service could not complete your request.');
+        const data = await response.json();
+        renderMatches(data.matches || []);
+        document.getElementById('results').hidden = false;
+        statusMessage.textContent = '';
+        window.setTimeout(() => document.getElementById('results').scrollIntoView({ behavior: 'smooth', block: 'start' }), 50);
+    } catch (error) {
+        statusMessage.textContent = error.message || 'Something went wrong. Please try again.';
+    } finally {
+        submitButton.disabled = false;
+    }
 });
 
-function collectForm(){
-    const track = document.getElementById('track').value;
-    const setting = document.getElementById('setting').value;
-    const majors = document.getElementById('majors').value.split(',').map(s=>s.trim()).filter(Boolean);
-    const party_pref = document.getElementById('party_pref').value;
-    const max_tuition_raw = document.getElementById('max_tuition').value;
-    const max_tuition = max_tuition_raw ? parseInt(max_tuition_raw,10) : null;
-    const painNodes = document.querySelectorAll('input[name="painPoints"]:checked');
-    const painPoints = Array.from(painNodes).map(n=>n.value);
-    return {track, preferences: {setting: setting==='any'?null:setting, majors, party_pref: party_pref==='any'?null:party_pref, max_tuition}, painPoints};
-}
-
-async function submitQuiz(e){
-    e.preventDefault();
-    const data = collectForm();
-    document.getElementById('submit-btn').disabled = true;
-    const res = await fetch('/api/match/', {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(data)});
-    const json = await res.json();
-    document.getElementById('submit-btn').disabled = false;
-    if(json && json.matches){
-        const list = document.getElementById('results-list');
-        list.innerHTML = '';
-        json.matches.forEach(m=>{
-            const card = document.createElement('div');
-            card.className = 'rounded-lg border border-slate-200 bg-white p-5 shadow-sm';
-            card.innerHTML = `
-                <div class="flex items-center justify-between mb-2">
-                    <div class="text-lg font-semibold">${m.name}</div>
-                    <div class="font-semibold text-[#506963]">${m.match_percentage}%</div>
-                </div>
-                <div class="mb-3 text-sm leading-6 text-slate-600">${m.explanation}</div>
-                <div class="grid gap-4 sm:grid-cols-2">
-                    <div>
-                        <div class="text-xs font-semibold uppercase tracking-wide text-[#506963]">Matches</div>
-                        <ul class="mt-1 text-sm text-slate-700">${(m.matching_factors||[]).map(f=>`<li>${f}</li>`).join('') || '<li>—</li>'}</ul>
-                    </div>
-                    <div>
-                        <div class="text-xs font-semibold uppercase tracking-wide text-[#8B6250]">Differences</div>
-                        <ul class="mt-1 text-sm text-slate-700">${(m.mismatches||[]).map(f=>`<li>${f}</li>`).join('') || '<li>—</li>'}</ul>
-                    </div>
-                </div>
-            `;
-            list.appendChild(card);
-        });
-        document.getElementById('results').classList.remove('hidden');
-        window.scrollTo({top: document.getElementById('results').offsetTop - 40, behavior:'smooth'});
-    } else {
-        alert('No matches returned');
-    }
-}
-
-document.getElementById('quiz-form').addEventListener('submit', submitQuiz);
+showStep();
 </script>
 </body>
 </html>
