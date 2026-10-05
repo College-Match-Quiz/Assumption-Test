@@ -1,3 +1,4 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -7,6 +8,7 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{% static 'css/site.css' %}">
     <style>body { font-family: 'Inter', sans-serif; } .font-display { font-family: 'Fraunces', serif; }</style>
 </head>
 <body class="min-h-screen bg-[#F1F3F4] text-slate-800 antialiased">
@@ -44,6 +46,24 @@
                     <a href="/about/" class="inline-flex items-center justify-center rounded-lg border border-slate-300 px-4 py-2.5 text-sm font-semibold text-slate-700 transition hover:bg-white">About Us</a>
                     <a href="/quiz/" class="inline-flex items-center justify-center rounded-lg bg-[#2D3648] px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-slate-700">Start your match</a>
                 </div>
+            </div>
+        </section>
+        <section class="mt-12" aria-labelledby="quick-answers-title">
+            <p class="text-xs font-semibold uppercase tracking-[0.15em] text-[#91bdff]">A few quick answers</p>
+            <h2 id="quick-answers-title" class="mt-3 text-2xl font-semibold">Good questions to start with</h2>
+            <div class="quick-answers">
+                <details>
+                    <summary>How do I get college matches?</summary>
+                    <p>Open the quiz and share your preferred setting, areas of study, and budget. You can explore your matches right away.</p>
+                </details>
+                <details>
+                    <summary>Are match results final recommendations?</summary>
+                    <p>No. Treat them as a starting point for research and confirm current program, cost, and admissions details with each school.</p>
+                </details>
+                <details>
+                    <summary>Can I compare transfer options?</summary>
+                    <p>Choose the transfer track in the quiz to include transfer friendliness and the campus factors you care about.</p>
+                </details>
             </div>
         </section>
     </main>
