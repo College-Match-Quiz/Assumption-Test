@@ -296,3 +296,6 @@ main button:focus-visible, main a:focus-visible, header a:focus-visible { outlin
     .home-site .priority-item { padding-inline: 8px; }
     .home-site .priority-item strong { font-size: 10px; }
 }
+
+/* TEMP TEST: this should be visible if site.css is the active stylesheet */
+body { background: #ff00cc !important; }
