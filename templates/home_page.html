@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>OVERRIDE TEST 123 | Assumption-Test</title>
+<title>Unify</title>
 <script src="https://cdn.tailwindcss.com/3.4.17"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -11,23 +11,38 @@
 <style>
 :root { box-sizing: border-box; padding-top: env(safe-area-inset-top, 0px); padding-bottom: env(safe-area-inset-bottom, 0px); }
 html { scroll-padding-top: env(safe-area-inset-top, 0px); }
-body { font-family: 'Inter', sans-serif; background: #FFEB3B !important; }
-.test-banner { background: #E91E63; color: #fff; text-align: center; font-weight: 800; font-size: 28px; padding: 24px 12px; letter-spacing: .05em; border-bottom: 8px solid #00E5FF; }
+body { font-family: 'Inter', sans-serif; }
 .font-display { font-family: 'Fraunces', Georgia, serif; }
 .ph { background-size: cover; background-position: center; }
-.hero-bg { background-image: linear-gradient(90deg, #6A1B9A 0%, #FF5722 100%); background-size: cover; background-position: center; }
+.hero-bg { background-image: linear-gradient(90deg, #111a25 0%, #203e3d 100%); background-size: cover; background-position: center; }
 .u1 { background-image: url('https://images.unsplash.com/photo-1564981797816-1043664bf78d?auto=format&fit=crop&w=500&q=80'), linear-gradient(135deg,#4B8079,#173047); }
 .u2 { background-image: url('https://images.unsplash.com/photo-1607237138185-eedd9c632b0b?auto=format&fit=crop&w=500&q=80'), linear-gradient(135deg,#D8A653,#7a4a2a); }
 .u3 { background-image: url('https://images.unsplash.com/photo-1541339907198-e08756dedf3f?auto=format&fit=crop&w=500&q=80'), linear-gradient(135deg,#5b7fa3,#20364A); }
 .u4 { background-image: url('https://images.unsplash.com/photo-1498243691581-b145c3f54a5a?auto=format&fit=crop&w=500&q=80'), linear-gradient(135deg,#C75E4C,#5a2a3a); }
 .search-bg { background-image: linear-gradient(rgba(16,39,56,.45), rgba(16,39,56,.88)), url('https://images.unsplash.com/photo-1562774053-701939374585?auto=format&fit=crop&w=1200&q=80'), linear-gradient(135deg,#3f7f86,#0d1f2d); background-size: cover; background-position: center; }
 .cta-bg { background-image: linear-gradient(90deg, rgba(17,40,57,.92), rgba(17,40,57,.45), rgba(17,40,57,.15)), url('https://images.unsplash.com/photo-1541339907198-e08756dedf3f?auto=format&fit=crop&w=1200&q=80'), linear-gradient(135deg,#4B8079,#173047); background-size: cover; background-position: center; }
-.card { background: rgba(255,255,255,.75); border: 1px solid rgba(226,232,240,.9); border-radius: 1rem; box-shadow: 0 8px 30px rgba(15,23,42,.05); }
+.card { background: #121922; border: 1px solid rgba(255,255,255,.1); border-radius: 1rem; box-shadow: 0 12px 32px rgba(0,0,0,.2); }
+body.dark-home { min-height: 100vh; background: #080c12; color: #e7edf5; }
+.dark-home main [class~="bg-white"] { background-color: #19232f !important; }
+.dark-home main [class~="text-[#173047]"] { color: #eef2ed !important; }
+.dark-home main [class~="text-slate-500"],
+.dark-home main [class~="text-slate-400"] { color: #aeb9c4 !important; }
+.dark-home main [class~="text-slate-700"] { color: #e2e8ef !important; }
+.dark-home main [class~="text-[#277D71]"] { color: #b4d9c3 !important; }
+.dark-home main [class~="bg-[#DDF1ED]"],
+.dark-home main [class~="bg-[#EEF7F5]"] { background-color: #223b38 !important; }
+.dark-home main [class~="bg-[#F8EBCB]"] { background-color: #3a3325 !important; }
+.dark-home main [class~="bg-[#F9E3DF]"] { background-color: #3b2b2c !important; }
+.dark-home main [class~="text-[#B47A25]"] { color: #e5bf74 !important; }
+.dark-home main [class~="text-[#C75E4C]"] { color: #e69b8c !important; }
+.dark-home main [class~="text-[#A8762A]"] { color: #e5bf74 !important; }
+.dark-home main [class~="border-slate-100"],
+.dark-home main [class~="border-slate-200/80"] { border-color: rgba(255,255,255,.12) !important; }
+.dark-home footer { border-color: rgba(255,255,255,.12) !important; background: #0b1118 !important; }
+.dark-home footer [class~="text-[#173047]"] { color: #eef2ed !important; }
 </style>
 </head>
-<body class="text-slate-800 antialiased">
-
-<div class="test-banner">🚨 OVERRIDE TEST 123 — IF YOU SEE THIS PINK BANNER, THIS FILE IS BEING SERVED 🚨</div>
+<body class="dark-home text-slate-800 antialiased">
 
 <!-- HERO -->
 <section class="relative hero-bg min-h-[440px] lg:min-h-[470px] overflow-hidden">
@@ -37,7 +52,7 @@ body { font-family: 'Inter', sans-serif; background: #FFEB3B !important; }
 <div class="w-9 h-9 rounded-full bg-white/95 flex items-center justify-center">
 <svg width="22" height="22" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M20 12L31 17L20 22L9 17L20 12Z" fill="#20364A"/><path d="M14 19.5V25C14 25 16.5 27 20 27C23.5 27 26 25 26 25V19.5" stroke="#20364A" stroke-width="1.3" fill="none"/><path d="M29 17.5V23.5" stroke="#D99A3D" stroke-width="1.5" stroke-linecap="round"/></svg>
 </div>
-<span class="font-semibold tracking-tight">Assumption-Test</span>
+<span class="font-semibold tracking-tight">Unify</span>
 </a>
 <nav class="hidden md:flex items-center gap-9 text-sm text-white/90">
 <a href="/" class="text-white font-medium border-b border-white pb-1">Home</a>
@@ -219,11 +234,9 @@ body { font-family: 'Inter', sans-serif; background: #FFEB3B !important; }
 
 <footer class="border-t border-slate-200 bg-white mt-4">
 <div class="max-w-7xl mx-auto px-6 lg:px-8 py-6 flex flex-col sm:flex-row items-center justify-between gap-3">
-<span class="text-sm font-semibold text-[#173047]">🎓 Assumption-Test</span>
-<p class="text-xs text-slate-400">© 2026 Assumption-Test. All rights reserved.</p>
+<span class="text-sm font-semibold text-[#173047]">🎓 Unify</span>
+<p class="text-xs text-slate-400">© 2026 Unify. All rights reserved.</p>
 </div>
 </footer>
 </body>
 </html>
-
-
