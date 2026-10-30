@@ -1,11 +1,13 @@
 from rest_framework import status
 from rest_framework.test import APITestCase
+from django.test import override_settings
 from unittest.mock import patch
 
 from .models import College
 from .scorecard import ScorecardError
 
 
+@override_settings(SCORECARD_API_KEY='')
 class CollegeMatchTests(APITestCase):
 	def setUp(self):
 		self.small_class = College.objects.create(
@@ -112,3 +114,41 @@ class CollegeMatchTests(APITestCase):
 		self.assertEqual(response.status_code, status.HTTP_503_SERVICE_UNAVAILABLE)
 		self.assertEqual(response.data['detail'], 'Scorecard unavailable')
 		get_scorecard_schools.assert_called_once_with()
+
+	def test_college_directory_returns_paginated_local_records(self):
+		response = self.client.get('/api/colleges/', {'page_size': 1})
+
+		self.assertEqual(response.status_code, status.HTTP_200_OK)
+		self.assertEqual(response.data['source'], 'local')
+		self.assertEqual(response.data['count'], 2)
+		self.assertEqual(response.data['page_size'], 1)
+		self.assertEqual(len(response.data['results']), 1)
+
+	def test_pre_med_interest_is_acknowledged_but_not_scored(self):
+		response = self.client.post('/api/match/', {
+			'track': 'freshman',
+			'preferences': {'pre_med_track': True},
+		}, format='json')
+
+		self.assertEqual(response.status_code, status.HTTP_200_OK)
+		self.assertIn('pre-med interest is noted', response.data['notice'])
+		self.assertIn('not included in this match score', response.data['notice'])
+
+	def test_college_directory_filters_scorecard_records(self):
+		records = [{
+			'id': 101,
+			'school.name': 'City College',
+			'school.city': 'Boston',
+			'school.state': 'MA',
+			'school.locale': 11,
+			'school.ownership': 1,
+			'latest.student.size': 4000,
+			'latest.cost.avg_net_price.public': 12000,
+		}]
+		with self.settings(SCORECARD_API_KEY='test-key'):
+			with patch('api.views.get_scorecard_schools', return_value=records):
+				response = self.client.get('/api/colleges/', {'q': 'Boston', 'setting': 'urban'})
+
+		self.assertEqual(response.status_code, status.HTTP_200_OK)
+		self.assertEqual(response.data['source'], 'college_scorecard')
+		self.assertEqual(response.data['results'][0]['name'], 'City College')

@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+from math import ceil
 
 from django.conf import settings
 from rest_framework.decorators import api_view
@@ -261,6 +262,9 @@ def calculate_matches(request):
             'college list. Set SCORECARD_API_KEY to use current U.S. Department of Education data.'
         )
 
+    if preferences.get('pre_med_track'):
+        notice += ' Your pre-med interest is noted, but pre-med advising and preparation are not included in this match score.'
+
     results = [
         _score_college(college, preferences, weights, track, pain_points, scorecard_source)
         for college in colleges
@@ -271,4 +275,86 @@ def calculate_matches(request):
         'source': source,
         'notice': notice,
         'matches': results[:5],
+    })
+
+
+@api_view(['GET'])
+def list_colleges(request):
+    scorecard_source = bool(getattr(settings, 'SCORECARD_API_KEY', ''))
+    if scorecard_source:
+        try:
+            colleges = _scorecard_colleges(get_scorecard_schools())
+        except ScorecardError as error:
+            return Response(
+                {'status': 'error', 'detail': str(error)},
+                status=status.HTTP_503_SERVICE_UNAVAILABLE,
+            )
+        source = 'college_scorecard'
+        notice = 'Data source: U.S. Department of Education College Scorecard.'
+    else:
+        colleges = _local_colleges()
+        source = 'local'
+        notice = (
+            'Showing locally stored institution records. Configure SCORECARD_API_KEY to use '
+            'current U.S. Department of Education data.'
+        )
+
+    query = request.query_params.get('q', '').strip().casefold()
+    setting = request.query_params.get('setting', '').strip().casefold()
+    try:
+        max_price = int(request.query_params['max_price']) if request.query_params.get('max_price') else None
+    except ValueError:
+        return Response(
+            {'status': 'error', 'detail': 'max_price must be a whole number.'},
+            status=status.HTTP_400_BAD_REQUEST,
+        )
+    if max_price is not None and max_price < 0:
+        return Response(
+            {'status': 'error', 'detail': 'max_price cannot be negative.'},
+            status=status.HTTP_400_BAD_REQUEST,
+        )
+
+    colleges = [college for college in colleges if (
+        (not query or query in college.name.casefold() or query in college.location.casefold())
+        and (not setting or (college.setting or '').casefold() == setting)
+        and (max_price is None or (
+            college.net_price_estimate is not None and college.net_price_estimate <= max_price
+        ))
+    )]
+    if source == 'college_scorecard':
+        colleges.sort(key=lambda college: college.student_size or 0, reverse=True)
+    else:
+        colleges.sort(key=lambda college: college.name.casefold())
+
+    try:
+        page = max(1, int(request.query_params.get('page', '1')))
+        page_size = min(100, max(1, int(request.query_params.get('page_size', '24'))))
+    except ValueError:
+        return Response(
+            {'status': 'error', 'detail': 'page and page_size must be whole numbers.'},
+            status=status.HTTP_400_BAD_REQUEST,
+        )
+
+    count = len(colleges)
+    start = (page - 1) * page_size
+    results = [{
+        'id': college.id,
+        'name': college.name,
+        'location': college.location,
+        'setting': college.setting,
+        'student_size': college.student_size,
+        'net_price': college.net_price_estimate,
+        'tuition_in_state': (college.scorecard_details or {}).get('tuition_in_state'),
+        'tuition_out_state': (college.scorecard_details or {}).get('tuition_out_state'),
+    } for college in colleges[start:start + page_size]]
+
+    return Response({
+        'status': 'success',
+        'source': source,
+        'notice': notice,
+        'count': count,
+        'page': page,
+        'page_size': page_size,
+        'pages': ceil(count / page_size),
+        'results': results,
     })

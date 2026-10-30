@@ -5,10 +5,12 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Find Your Match | Unify</title>
+    <link rel="icon" type="image/svg+xml" href="{% static 'images/unify-mark.svg' %}">
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="{% static 'css/site.css' %}?v=20261027-unify2">
+    <link rel="stylesheet" href="{% static 'css/site.css' %}?v=20261030-darkmenu">
+    <script src="{% static 'js/site.js' %}" defer></script>
     <style>body { font-family: 'Inter', sans-serif; } .font-display { font-family: 'Fraunces', serif; }</style>
 </head>
 <body class="quiz-page min-h-screen text-slate-800 antialiased">
@@ -16,8 +18,8 @@
     <div class="mx-auto max-w-6xl px-4 py-4 sm:px-6">
         <div class="relative flex flex-wrap items-center justify-between gap-y-3">
             <a href="/" class="font-display flex items-center gap-2.5 text-xl font-bold text-slate-900">
-                <span class="flex h-8 w-8 items-center justify-center rounded-full bg-[#82938F] text-sm text-[#2D3648]">U</span>
-                Unify
+                <img src="{% static 'images/unify-mark.svg' %}" alt="" aria-hidden="true" class="h-8 w-8">
+                Unify<sup class="ml-0.5 text-[10px]">™</sup>
             </a>
             <nav aria-label="Main navigation" class="order-3 flex w-full flex-wrap items-center gap-x-4 gap-y-2 text-xs font-medium text-slate-600 lg:absolute lg:left-1/2 lg:top-1/2 lg:order-none lg:w-auto lg:-translate-x-1/2 lg:-translate-y-1/2 lg:flex-nowrap lg:gap-6 lg:text-sm">
                 <a href="/" class="transition hover:text-slate-900">Home</a>
@@ -58,13 +60,39 @@
             <div class="major-grid">
                 <label class="choice-card major-choice"><input type="checkbox" name="majorChoice" value="Computer Science"><strong>Computer science</strong></label>
                 <label class="choice-card major-choice"><input type="checkbox" name="majorChoice" value="Business"><strong>Business</strong></label>
-                <label class="choice-card major-choice"><input type="checkbox" name="majorChoice" value="Biology"><strong>Biology</strong></label>
+                <label class="choice-card major-choice"><input type="checkbox" name="majorChoice" value="Biology" data-pre-med-relevant><strong>Biology</strong></label>
                 <label class="choice-card major-choice"><input type="checkbox" name="majorChoice" value="Engineering"><strong>Engineering</strong></label>
-                <label class="choice-card major-choice"><input type="checkbox" name="majorChoice" value="Psychology"><strong>Psychology</strong></label>
-                <label class="choice-card major-choice"><input type="checkbox" name="majorChoice" value="Nursing"><strong>Nursing</strong></label>
+                <label class="choice-card major-choice"><input type="checkbox" name="majorChoice" value="Psychology" data-pre-med-relevant><strong>Psychology</strong></label>
+                <label class="choice-card major-choice"><input type="checkbox" name="majorChoice" value="Nursing" data-pre-med-relevant><strong>Nursing</strong></label>
                 <label class="choice-card major-choice"><input type="checkbox" name="majorChoice" value="Education"><strong>Education</strong></label>
                 <label class="choice-card major-choice"><input type="checkbox" name="majorChoice" value="Arts"><strong>Arts &amp; design</strong></label>
+                <label class="choice-card major-choice"><input type="checkbox" name="majorChoice" value="Accounting"><strong>Accounting</strong></label>
+                <label class="choice-card major-choice"><input type="checkbox" name="majorChoice" value="Anthropology"><strong>Anthropology</strong></label>
+                <label class="choice-card major-choice"><input type="checkbox" name="majorChoice" value="Architecture"><strong>Architecture</strong></label>
+                <label class="choice-card major-choice"><input type="checkbox" name="majorChoice" value="Chemistry" data-pre-med-relevant><strong>Chemistry</strong></label>
+                <label class="choice-card major-choice"><input type="checkbox" name="majorChoice" value="Communications"><strong>Communications</strong></label>
+                <label class="choice-card major-choice"><input type="checkbox" name="majorChoice" value="Criminal Justice"><strong>Criminal justice</strong></label>
+                <label class="choice-card major-choice"><input type="checkbox" name="majorChoice" value="Economics"><strong>Economics</strong></label>
+                <label class="choice-card major-choice"><input type="checkbox" name="majorChoice" value="English"><strong>English</strong></label>
+                <label class="choice-card major-choice"><input type="checkbox" name="majorChoice" value="Environmental Science"><strong>Environmental science</strong></label>
+                <label class="choice-card major-choice"><input type="checkbox" name="majorChoice" value="Finance"><strong>Finance</strong></label>
+                <label class="choice-card major-choice"><input type="checkbox" name="majorChoice" value="History"><strong>History</strong></label>
+                <label class="choice-card major-choice"><input type="checkbox" name="majorChoice" value="Mathematics"><strong>Mathematics</strong></label>
+                <label class="choice-card major-choice"><input type="checkbox" name="majorChoice" value="Marketing"><strong>Marketing</strong></label>
+                <label class="choice-card major-choice"><input type="checkbox" name="majorChoice" value="Philosophy"><strong>Philosophy</strong></label>
+                <label class="choice-card major-choice"><input type="checkbox" name="majorChoice" value="Physics" data-pre-med-relevant><strong>Physics</strong></label>
+                <label class="choice-card major-choice"><input type="checkbox" name="majorChoice" value="Political Science"><strong>Political science</strong></label>
+                <label class="choice-card major-choice"><input type="checkbox" name="majorChoice" value="Public Health" data-pre-med-relevant><strong>Public health</strong></label>
+                <label class="choice-card major-choice"><input type="checkbox" name="majorChoice" value="Social Work"><strong>Social work</strong></label>
+                <label class="choice-card major-choice"><input type="checkbox" name="majorChoice" value="Sociology"><strong>Sociology</strong></label>
                 <label class="choice-card major-choice"><input type="checkbox" name="majorChoice" value="Undecided"><strong>Still exploring</strong></label>
+            </div>
+            <div id="pre-med-option" class="mt-4" hidden>
+                <label class="choice-card">
+                    <input id="pre-med-track" type="checkbox" name="preMedTrack">
+                    <strong>I’m planning on a pre-med track</strong>
+                </label>
+                <p class="quiz-step-hint mb-0 mt-2">This is noted as an interest, but pre-med advising and preparation aren’t included in the match score.</p>
             </div>
             <div class="major-other"><label for="major-other">Or add another area</label><input id="major-other" type="text" placeholder="Separate multiple interests with commas" autocomplete="off"></div>
         </fieldset>
@@ -163,6 +191,8 @@ const progressFill = document.querySelector('.quiz-progress-fill');
 const stepLabel = document.getElementById('step-label');
 const stepTopic = document.getElementById('step-topic');
 const statusMessage = document.getElementById('quiz-status');
+const preMedOption = document.getElementById('pre-med-option');
+const preMedInput = document.getElementById('pre-med-track');
 let currentStep = 0;
 
 function activeSteps() {
@@ -204,6 +234,7 @@ function collectForm() {
         track: selectedValue('track'),
         preferences: {
             majors,
+            pre_med_track: preMedInput.checked,
             setting: setting === 'any' ? null : setting,
             party_pref: partyPreference === 'any' ? null : partyPreference,
             max_tuition: maxTuition === 'any' ? null : Number(maxTuition),
@@ -304,6 +335,9 @@ backButton.addEventListener('click', () => { currentStep = Math.max(0, currentSt
 nextButton.addEventListener('click', () => { currentStep = Math.min(activeSteps().length - 1, currentStep + 1); showStep(); });
 form.addEventListener('change', event => {
     if (event.target.name === 'track') showStep();
+    const hasPreMedMajor = form.querySelector('input[name="majorChoice"][data-pre-med-relevant]:checked');
+    preMedOption.hidden = !hasPreMedMajor;
+    if (!hasPreMedMajor) preMedInput.checked = false;
 });
 document.getElementById('restart-btn').addEventListener('click', () => {
     document.getElementById('results').hidden = true;

@@ -5,19 +5,21 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Contact Us | Unify</title>
+    <link rel="icon" type="image/svg+xml" href="{% static 'images/unify-mark.svg' %}">
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="{% static 'css/site.css' %}?v=20261018">
+    <link rel="stylesheet" href="{% static 'css/site.css' %}?v=20261030-dark">
+    <script src="{% static 'js/site.js' %}" defer></script>
     <style>body { font-family: 'Inter', sans-serif; } .font-display { font-family: 'Fraunces', serif; }</style>
 </head>
-<body class="min-h-screen bg-[#F1F3F4] text-slate-800 antialiased">
+<body class="dark-site min-h-screen bg-[#F1F3F4] text-slate-800 antialiased">
     <header class="sticky top-0 z-10 border-b border-slate-200/80 bg-[#F1F3F4]/95 backdrop-blur-sm">
         <div class="mx-auto max-w-6xl px-4 py-4 sm:px-6">
             <div class="relative flex flex-wrap items-center justify-between gap-y-3">
                 <a href="/" class="font-display flex items-center gap-2.5 text-xl font-bold text-slate-900">
-                    <span class="flex h-8 w-8 items-center justify-center rounded-full bg-[#82938F] text-sm text-[#2D3648]">U</span>
-                    Unify
+                    <img src="{% static 'images/unify-mark.svg' %}" alt="" aria-hidden="true" class="h-8 w-8">
+                    Unify<sup class="ml-0.5 text-[10px]">™</sup>
                 </a>
                 <nav aria-label="Main navigation" class="order-3 flex w-full flex-wrap items-center gap-x-4 gap-y-2 text-xs font-medium text-slate-600 lg:absolute lg:left-1/2 lg:top-1/2 lg:order-none lg:w-auto lg:-translate-x-1/2 lg:-translate-y-1/2 lg:flex-nowrap lg:gap-6 lg:text-sm">
                     <a href="/" class="transition hover:text-slate-900">Home</a>
@@ -35,7 +37,7 @@
     <main class="mx-auto max-w-6xl px-6 py-14 sm:py-20">
         <section class="grid gap-10 border-b border-slate-200 pb-14 md:grid-cols-[1.2fr_0.8fr] md:items-end md:gap-16 md:pb-20">
             <div>
-                <p class="inline-flex items-center rounded-full border border-[#A87861]/30 bg-[#A87861]/10 px-3 py-1 text-xs font-semibold uppercase tracking-[0.15em] text-[#865D4D]">We’re here to help</p>
+                <p class="inline-flex items-center rounded-full border border-[#E5A089]/35 bg-[#E5A089]/10 px-3 py-1 text-xs font-semibold uppercase tracking-[0.15em] text-[#F0B39E]">We’re here to help</p>
                 <h1 class="font-display mt-6 text-4xl font-bold leading-tight text-slate-900 sm:text-5xl">Contact Us</h1>
                 <p class="mt-5 max-w-2xl text-lg leading-8 text-slate-600">Have a question about Unify or your college search? We’d be glad to hear from you.</p>
             </div>
@@ -49,7 +51,7 @@
             </div>
         </section>
         <section class="mt-12" aria-labelledby="quick-answers-title">
-            <p class="text-xs font-semibold uppercase tracking-[0.15em] text-[#91bdff]">A few quick answers</p>
+            <p class="text-xs font-semibold uppercase tracking-[0.15em] text-[#B4D9C3]">A few quick answers</p>
             <h2 id="quick-answers-title" class="mt-3 text-2xl font-semibold">Good questions to start with</h2>
             <div class="quick-answers">
                 <details>
