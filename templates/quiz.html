@@ -4,20 +4,22 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Find Your Match | Assumption-Test</title>
+    <title>Find Your Match | Unify</title>
+    <link rel="icon" type="image/svg+xml" href="{% static 'images/unify-mark.svg' %}">
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="{% static 'css/site.css' %}">
+    <link rel="stylesheet" href="{% static 'css/site.css' %}?v=20261030-darkmenu">
+    <script src="{% static 'js/site.js' %}" defer></script>
     <style>body { font-family: 'Inter', sans-serif; } .font-display { font-family: 'Fraunces', serif; }</style>
 </head>
-<body class="min-h-screen bg-[#F1F3F4] text-slate-800 antialiased">
+<body class="quiz-page min-h-screen text-slate-800 antialiased">
 <header class="sticky top-0 z-10 border-b border-slate-200/80 bg-[#F1F3F4]/95 backdrop-blur-sm">
     <div class="mx-auto max-w-6xl px-4 py-4 sm:px-6">
         <div class="relative flex flex-wrap items-center justify-between gap-y-3">
             <a href="/" class="font-display flex items-center gap-2.5 text-xl font-bold text-slate-900">
-                <span class="flex h-8 w-8 items-center justify-center rounded-full bg-[#82938F] text-sm text-[#2D3648]">A</span>
-                Assumption-Test
+                <img src="{% static 'images/unify-mark.svg' %}" alt="" aria-hidden="true" class="h-8 w-8">
+                Unify<sup class="ml-0.5 text-[10px]">™</sup>
             </a>
             <nav aria-label="Main navigation" class="order-3 flex w-full flex-wrap items-center gap-x-4 gap-y-2 text-xs font-medium text-slate-600 lg:absolute lg:left-1/2 lg:top-1/2 lg:order-none lg:w-auto lg:-translate-x-1/2 lg:-translate-y-1/2 lg:flex-nowrap lg:gap-6 lg:text-sm">
                 <a href="/" class="transition hover:text-slate-900">Home</a>
@@ -58,13 +60,39 @@
             <div class="major-grid">
                 <label class="choice-card major-choice"><input type="checkbox" name="majorChoice" value="Computer Science"><strong>Computer science</strong></label>
                 <label class="choice-card major-choice"><input type="checkbox" name="majorChoice" value="Business"><strong>Business</strong></label>
-                <label class="choice-card major-choice"><input type="checkbox" name="majorChoice" value="Biology"><strong>Biology</strong></label>
+                <label class="choice-card major-choice"><input type="checkbox" name="majorChoice" value="Biology" data-pre-med-relevant><strong>Biology</strong></label>
                 <label class="choice-card major-choice"><input type="checkbox" name="majorChoice" value="Engineering"><strong>Engineering</strong></label>
-                <label class="choice-card major-choice"><input type="checkbox" name="majorChoice" value="Psychology"><strong>Psychology</strong></label>
-                <label class="choice-card major-choice"><input type="checkbox" name="majorChoice" value="Nursing"><strong>Nursing</strong></label>
+                <label class="choice-card major-choice"><input type="checkbox" name="majorChoice" value="Psychology" data-pre-med-relevant><strong>Psychology</strong></label>
+                <label class="choice-card major-choice"><input type="checkbox" name="majorChoice" value="Nursing" data-pre-med-relevant><strong>Nursing</strong></label>
                 <label class="choice-card major-choice"><input type="checkbox" name="majorChoice" value="Education"><strong>Education</strong></label>
                 <label class="choice-card major-choice"><input type="checkbox" name="majorChoice" value="Arts"><strong>Arts &amp; design</strong></label>
+                <label class="choice-card major-choice"><input type="checkbox" name="majorChoice" value="Accounting"><strong>Accounting</strong></label>
+                <label class="choice-card major-choice"><input type="checkbox" name="majorChoice" value="Anthropology"><strong>Anthropology</strong></label>
+                <label class="choice-card major-choice"><input type="checkbox" name="majorChoice" value="Architecture"><strong>Architecture</strong></label>
+                <label class="choice-card major-choice"><input type="checkbox" name="majorChoice" value="Chemistry" data-pre-med-relevant><strong>Chemistry</strong></label>
+                <label class="choice-card major-choice"><input type="checkbox" name="majorChoice" value="Communications"><strong>Communications</strong></label>
+                <label class="choice-card major-choice"><input type="checkbox" name="majorChoice" value="Criminal Justice"><strong>Criminal justice</strong></label>
+                <label class="choice-card major-choice"><input type="checkbox" name="majorChoice" value="Economics"><strong>Economics</strong></label>
+                <label class="choice-card major-choice"><input type="checkbox" name="majorChoice" value="English"><strong>English</strong></label>
+                <label class="choice-card major-choice"><input type="checkbox" name="majorChoice" value="Environmental Science"><strong>Environmental science</strong></label>
+                <label class="choice-card major-choice"><input type="checkbox" name="majorChoice" value="Finance"><strong>Finance</strong></label>
+                <label class="choice-card major-choice"><input type="checkbox" name="majorChoice" value="History"><strong>History</strong></label>
+                <label class="choice-card major-choice"><input type="checkbox" name="majorChoice" value="Mathematics"><strong>Mathematics</strong></label>
+                <label class="choice-card major-choice"><input type="checkbox" name="majorChoice" value="Marketing"><strong>Marketing</strong></label>
+                <label class="choice-card major-choice"><input type="checkbox" name="majorChoice" value="Philosophy"><strong>Philosophy</strong></label>
+                <label class="choice-card major-choice"><input type="checkbox" name="majorChoice" value="Physics" data-pre-med-relevant><strong>Physics</strong></label>
+                <label class="choice-card major-choice"><input type="checkbox" name="majorChoice" value="Political Science"><strong>Political science</strong></label>
+                <label class="choice-card major-choice"><input type="checkbox" name="majorChoice" value="Public Health" data-pre-med-relevant><strong>Public health</strong></label>
+                <label class="choice-card major-choice"><input type="checkbox" name="majorChoice" value="Social Work"><strong>Social work</strong></label>
+                <label class="choice-card major-choice"><input type="checkbox" name="majorChoice" value="Sociology"><strong>Sociology</strong></label>
                 <label class="choice-card major-choice"><input type="checkbox" name="majorChoice" value="Undecided"><strong>Still exploring</strong></label>
+            </div>
+            <div id="pre-med-option" class="mt-4" hidden>
+                <label class="choice-card">
+                    <input id="pre-med-track" type="checkbox" name="preMedTrack">
+                    <strong>I’m planning on a pre-med track</strong>
+                </label>
+                <p class="quiz-step-hint mb-0 mt-2">This is noted as an interest, but pre-med advising and preparation aren’t included in the match score.</p>
             </div>
             <div class="major-other"><label for="major-other">Or add another area</label><input id="major-other" type="text" placeholder="Separate multiple interests with commas" autocomplete="off"></div>
         </fieldset>
@@ -81,13 +109,13 @@
         </fieldset>
 
         <fieldset class="quiz-step" data-topic="Learning environment" hidden>
-            <legend>What class size feels right?</legend>
-            <p class="quiz-step-hint">Smaller classes can mean more personal instruction. Choose a maximum average, or leave it open.</p>
+            <legend>What student population feels right?</legend>
+            <p class="quiz-step-hint">Choose a maximum total enrollment, or leave it open. Smaller campuses can feel more close-knit.</p>
             <div class="choice-grid choice-grid-3">
-                <label class="choice-card"><input type="radio" name="class_size_max" value="any" checked><strong>No preference</strong><span>Do not filter by class size.</span></label>
-                <label class="choice-card"><input type="radio" name="class_size_max" value="20"><strong>20 or fewer</strong><span>Small classes matter a lot.</span></label>
-                <label class="choice-card"><input type="radio" name="class_size_max" value="35"><strong>35 or fewer</strong><span>A more personal classroom.</span></label>
-                <label class="choice-card"><input type="radio" name="class_size_max" value="50"><strong>50 or fewer</strong><span>Somewhat smaller is a plus.</span></label>
+                <label class="choice-card"><input type="radio" name="student_size_max" value="any" checked><strong>No preference</strong><span>Do not filter by enrollment.</span></label>
+                <label class="choice-card"><input type="radio" name="student_size_max" value="5000"><strong>5,000 or fewer</strong><span>A small-campus feel.</span></label>
+                <label class="choice-card"><input type="radio" name="student_size_max" value="15000"><strong>15,000 or fewer</strong><span>A medium-sized community.</span></label>
+                <label class="choice-card"><input type="radio" name="student_size_max" value="30000"><strong>30,000 or fewer</strong><span>Keep larger schools in the mix.</span></label>
             </div>
         </fieldset>
 
@@ -146,6 +174,7 @@
     <section id="results" class="mt-8" hidden>
         <p class="text-xs font-semibold uppercase tracking-[0.15em] text-[#506963]">Your shortlist</p>
         <h2 class="font-display mb-4 mt-2 text-2xl font-bold text-slate-900">Colleges to explore</h2>
+        <p id="results-source" class="results-source" role="note"></p>
         <div id="results-list"></div>
         <button class="quiz-restart" id="restart-btn" type="button">Adjust my answers</button>
     </section>
@@ -162,6 +191,8 @@ const progressFill = document.querySelector('.quiz-progress-fill');
 const stepLabel = document.getElementById('step-label');
 const stepTopic = document.getElementById('step-topic');
 const statusMessage = document.getElementById('quiz-status');
+const preMedOption = document.getElementById('pre-med-option');
+const preMedInput = document.getElementById('pre-med-track');
 let currentStep = 0;
 
 function activeSteps() {
@@ -196,17 +227,18 @@ function collectForm() {
     const setting = selectedValue('setting');
     const partyPreference = selectedValue('party_pref');
     const maxTuition = selectedValue('max_tuition');
-    const classSize = selectedValue('class_size_max');
+    const studentSize = selectedValue('student_size_max');
     const residentialRate = selectedValue('residential_rate');
     const painPoints = Array.from(form.querySelectorAll('input[name="painPoints"]:checked')).map(input => input.value);
     return {
         track: selectedValue('track'),
         preferences: {
             majors,
+            pre_med_track: preMedInput.checked,
             setting: setting === 'any' ? null : setting,
             party_pref: partyPreference === 'any' ? null : partyPreference,
             max_tuition: maxTuition === 'any' ? null : Number(maxTuition),
-            class_size_max: classSize === 'any' ? null : Number(classSize),
+            student_size_max: studentSize === 'any' ? null : Number(studentSize),
             residential_rate: residentialRate === 'any' ? null : Number(residentialRate)
         },
         painPoints
@@ -251,6 +283,34 @@ function renderMatches(matches) {
         score.textContent = `${match.match_percentage}%`;
         heading.append(name, score);
         card.appendChild(heading);
+        if (match.location) {
+            const location = document.createElement('p');
+            location.className = 'quiz-result-location';
+            location.textContent = match.location;
+            card.appendChild(location);
+        }
+        if (match.scorecard_details) {
+            const details = document.createElement('dl');
+            details.className = 'quiz-result-facts';
+            const facts = [
+                ['Undergraduate enrollment', match.scorecard_details.student_size, value => Number(value).toLocaleString()],
+                ['Average net price', match.scorecard_details.net_price, value => formatCurrency(value)],
+                ['In-state tuition', match.scorecard_details.tuition_in_state, value => formatCurrency(value)],
+                ['Out-of-state tuition', match.scorecard_details.tuition_out_state, value => formatCurrency(value)],
+                ['Admission rate', match.scorecard_details.admit_rate, value => `${Math.round(Number(value) * 100)}%`]
+            ];
+            facts.filter(([, value]) => value !== null && value !== undefined)
+                .forEach(([label, value, format]) => {
+                    const item = document.createElement('div');
+                    const term = document.createElement('dt');
+                    const description = document.createElement('dd');
+                    term.textContent = label;
+                    description.textContent = format(value);
+                    item.append(term, description);
+                    details.appendChild(item);
+                });
+            if (details.childElementCount) card.appendChild(details);
+        }
         const explanation = document.createElement('p');
         explanation.textContent = match.explanation;
         card.appendChild(explanation);
@@ -263,10 +323,21 @@ function renderMatches(matches) {
     });
 }
 
+function formatCurrency(value) {
+    return new Intl.NumberFormat('en-US', {
+        style: 'currency',
+        currency: 'USD',
+        maximumFractionDigits: 0
+    }).format(Number(value));
+}
+
 backButton.addEventListener('click', () => { currentStep = Math.max(0, currentStep - 1); showStep(); });
 nextButton.addEventListener('click', () => { currentStep = Math.min(activeSteps().length - 1, currentStep + 1); showStep(); });
 form.addEventListener('change', event => {
     if (event.target.name === 'track') showStep();
+    const hasPreMedMajor = form.querySelector('input[name="majorChoice"][data-pre-med-relevant]:checked');
+    preMedOption.hidden = !hasPreMedMajor;
+    if (!hasPreMedMajor) preMedInput.checked = false;
 });
 document.getElementById('restart-btn').addEventListener('click', () => {
     document.getElementById('results').hidden = true;
@@ -284,11 +355,14 @@ form.addEventListener('submit', async event => {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(collectForm())
         });
-        if (!response.ok) throw new Error('The match service could not complete your request.');
         const data = await response.json();
+        if (!response.ok) throw new Error(data.detail || 'The match service could not complete your request.');
         renderMatches(data.matches || []);
         document.getElementById('results').hidden = false;
-        statusMessage.textContent = '';
+        const resultsSource = document.getElementById('results-source');
+        resultsSource.textContent = data.notice || '';
+        resultsSource.dataset.source = data.source || 'unknown';
+        statusMessage.textContent = data.notice || '';
         window.setTimeout(() => document.getElementById('results').scrollIntoView({ behavior: 'smooth', block: 'start' }), 50);
     } catch (error) {
         statusMessage.textContent = error.message || 'Something went wrong. Please try again.';

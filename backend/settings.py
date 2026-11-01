@@ -1,10 +1,14 @@
+import os
 from pathlib import Path
+from dotenv import load_dotenv
 
 BASE_DIR = Path(__file__).resolve().parent.parent
+load_dotenv(BASE_DIR / '.env')
 
 SECRET_KEY = 'django-insecure-key-for-dev'
 DEBUG = True
 ALLOWED_HOSTS = ['localhost', '127.0.0.1', '[::1]']
+SCORECARD_API_KEY = os.environ.get('SCORECARD_API_KEY', '')
 
 INSTALLED_APPS = [
     'django.contrib.admin',
