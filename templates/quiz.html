@@ -9,7 +9,7 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="{% static 'css/site.css' %}?v=20261030-darkmenu">
+    <link rel="stylesheet" href="{% static 'css/site.css' %}?v=20261106-state-filter">
     <script src="{% static 'js/site.js' %}" defer></script>
     <style>body { font-family: 'Inter', sans-serif; } .font-display { font-family: 'Fraunces', serif; }</style>
 </head>
@@ -41,7 +41,7 @@
 
     <form id="quiz-form" class="quiz-form rounded-xl border border-slate-200 bg-white shadow-sm">
         <div class="quiz-progress" aria-live="polite">
-            <div class="quiz-progress-copy"><strong id="step-label">Question 1 of 7</strong><span id="step-topic">Your path</span></div>
+            <div class="quiz-progress-copy"><strong id="step-label">Question 1 of 8</strong><span id="step-topic">Your path</span></div>
             <div class="quiz-progress-track" role="progressbar" aria-label="Quiz progress" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><span class="quiz-progress-fill"></span></div>
         </div>
 
@@ -52,6 +52,65 @@
                 <label class="choice-card"><input type="radio" name="track" value="freshman" checked><strong>Starting college</strong><span>I am applying as a first-time student.</span></label>
                 <label class="choice-card"><input type="radio" name="track" value="transfer"><strong>Transferring</strong><span>I have attended college before.</span></label>
             </div>
+        </fieldset>
+
+        <fieldset class="quiz-step" data-topic="Preferred state" hidden>
+            <legend>What state would you like to attend college in?</legend>
+            <p class="quiz-step-hint">Choose a state to limit your matches, or keep it open to see schools around the country.</p>
+            <label class="quiz-state-label" for="state-preference">Preferred state</label>
+            <select id="state-preference" name="state">
+                <option value="">Any state</option>
+                <option value="AL">Alabama</option>
+                <option value="AK">Alaska</option>
+                <option value="AZ">Arizona</option>
+                <option value="AR">Arkansas</option>
+                <option value="CA">California</option>
+                <option value="CO">Colorado</option>
+                <option value="CT">Connecticut</option>
+                <option value="DE">Delaware</option>
+                <option value="FL">Florida</option>
+                <option value="GA">Georgia</option>
+                <option value="HI">Hawaii</option>
+                <option value="ID">Idaho</option>
+                <option value="IL">Illinois</option>
+                <option value="IN">Indiana</option>
+                <option value="IA">Iowa</option>
+                <option value="KS">Kansas</option>
+                <option value="KY">Kentucky</option>
+                <option value="LA">Louisiana</option>
+                <option value="ME">Maine</option>
+                <option value="MD">Maryland</option>
+                <option value="MA">Massachusetts</option>
+                <option value="MI">Michigan</option>
+                <option value="MN">Minnesota</option>
+                <option value="MS">Mississippi</option>
+                <option value="MO">Missouri</option>
+                <option value="MT">Montana</option>
+                <option value="NE">Nebraska</option>
+                <option value="NV">Nevada</option>
+                <option value="NH">New Hampshire</option>
+                <option value="NJ">New Jersey</option>
+                <option value="NM">New Mexico</option>
+                <option value="NY">New York</option>
+                <option value="NC">North Carolina</option>
+                <option value="ND">North Dakota</option>
+                <option value="OH">Ohio</option>
+                <option value="OK">Oklahoma</option>
+                <option value="OR">Oregon</option>
+                <option value="PA">Pennsylvania</option>
+                <option value="RI">Rhode Island</option>
+                <option value="SC">South Carolina</option>
+                <option value="SD">South Dakota</option>
+                <option value="TN">Tennessee</option>
+                <option value="TX">Texas</option>
+                <option value="UT">Utah</option>
+                <option value="VT">Vermont</option>
+                <option value="VA">Virginia</option>
+                <option value="WA">Washington</option>
+                <option value="WV">West Virginia</option>
+                <option value="WI">Wisconsin</option>
+                <option value="WY">Wyoming</option>
+            </select>
         </fieldset>
 
         <fieldset class="quiz-step" data-topic="What you want to study" hidden>
@@ -175,6 +234,11 @@
         <p class="text-xs font-semibold uppercase tracking-[0.15em] text-[#506963]">Your shortlist</p>
         <h2 class="font-display mb-4 mt-2 text-2xl font-bold text-slate-900">Colleges to explore</h2>
         <p id="results-source" class="results-source" role="note"></p>
+        <div class="quiz-ai-controls">
+            <p>Optional AI insights use your quiz answers and shortlist to explain possible fits. Your answers and match details are sent to OpenAI; verify important details with each college.</p>
+            <button id="ai-insights-btn" type="button">Generate AI fit insights</button>
+            <p id="ai-insights-status" role="status" aria-live="polite"></p>
+        </div>
         <div id="results-list"></div>
         <button class="quiz-restart" id="restart-btn" type="button">Adjust my answers</button>
     </section>
@@ -191,9 +255,13 @@ const progressFill = document.querySelector('.quiz-progress-fill');
 const stepLabel = document.getElementById('step-label');
 const stepTopic = document.getElementById('step-topic');
 const statusMessage = document.getElementById('quiz-status');
+const aiInsightsButton = document.getElementById('ai-insights-btn');
+const aiInsightsStatus = document.getElementById('ai-insights-status');
 const preMedOption = document.getElementById('pre-med-option');
 const preMedInput = document.getElementById('pre-med-track');
 let currentStep = 0;
+let lastQuizPayload = null;
+let lastMatches = [];
 
 function activeSteps() {
     const isTransfer = form.querySelector('input[name="track"]:checked').value === 'transfer';
@@ -225,6 +293,7 @@ function collectForm() {
     const customMajors = document.getElementById('major-other').value.split(',').map(value => value.trim()).filter(Boolean);
     majors.push(...customMajors);
     const setting = selectedValue('setting');
+    const state = form.querySelector('select[name="state"]').value;
     const partyPreference = selectedValue('party_pref');
     const maxTuition = selectedValue('max_tuition');
     const studentSize = selectedValue('student_size_max');
@@ -235,6 +304,7 @@ function collectForm() {
         preferences: {
             majors,
             pre_med_track: preMedInput.checked,
+            state: state || null,
             setting: setting === 'any' ? null : setting,
             party_pref: partyPreference === 'any' ? null : partyPreference,
             max_tuition: maxTuition === 'any' ? null : Number(maxTuition),
@@ -267,7 +337,7 @@ function renderMatches(matches) {
     if (!matches.length) {
         const empty = document.createElement('p');
         empty.className = 'quiz-result';
-        empty.textContent = 'No college matches are available yet. Try again after the school list has been added.';
+        empty.textContent = 'No colleges in our current data match this state and your preferences. Try another state or choose “Any state.”';
         list.appendChild(empty);
         return;
     }
@@ -319,6 +389,11 @@ function renderMatches(matches) {
         addList(notes, 'Aligned with your choices', match.matching_factors || []);
         addList(notes, 'Worth looking into', match.mismatches || []);
         card.appendChild(notes);
+        const aiInsight = document.createElement('p');
+        aiInsight.className = 'quiz-ai-insight';
+        aiInsight.dataset.matchId = String(match.id);
+        aiInsight.hidden = true;
+        card.appendChild(aiInsight);
         list.appendChild(card);
     });
 }
@@ -341,6 +416,10 @@ form.addEventListener('change', event => {
 });
 document.getElementById('restart-btn').addEventListener('click', () => {
     document.getElementById('results').hidden = true;
+    aiInsightsStatus.textContent = '';
+    aiInsightsButton.disabled = false;
+    lastQuizPayload = null;
+    lastMatches = [];
     currentStep = 0;
     showStep();
     window.scrollTo({ top: form.offsetTop - 30, behavior: 'smooth' });
@@ -348,16 +427,22 @@ document.getElementById('restart-btn').addEventListener('click', () => {
 form.addEventListener('submit', async event => {
     event.preventDefault();
     submitButton.disabled = true;
-    statusMessage.textContent = 'Finding colleges that fit your priorities…';
+    statusMessage.textContent = 'Finding colleges that fit your priorities. The first search may take a little longer while school data loads…';
     try {
+        lastQuizPayload = collectForm();
         const response = await fetch('/api/match/', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(collectForm())
+            body: JSON.stringify(lastQuizPayload),
+            signal: AbortSignal.timeout(45000)
         });
         const data = await response.json();
         if (!response.ok) throw new Error(data.detail || 'The match service could not complete your request.');
-        renderMatches(data.matches || []);
+        lastMatches = data.matches || [];
+        renderMatches(lastMatches);
+        aiInsightsButton.hidden = lastMatches.length === 0;
+        aiInsightsButton.disabled = false;
+        aiInsightsStatus.textContent = '';
         document.getElementById('results').hidden = false;
         const resultsSource = document.getElementById('results-source');
         resultsSource.textContent = data.notice || '';
@@ -365,9 +450,44 @@ form.addEventListener('submit', async event => {
         statusMessage.textContent = data.notice || '';
         window.setTimeout(() => document.getElementById('results').scrollIntoView({ behavior: 'smooth', block: 'start' }), 50);
     } catch (error) {
-        statusMessage.textContent = error.message || 'Something went wrong. Please try again.';
+        statusMessage.textContent = error.name === 'TimeoutError'
+            ? 'The school data service is taking too long to respond. Please try again in a moment.'
+            : error.message || 'Something went wrong. Please try again.';
     } finally {
         submitButton.disabled = false;
+    }
+});
+
+aiInsightsButton.addEventListener('click', async () => {
+    if (!lastQuizPayload || !lastMatches.length) return;
+    aiInsightsButton.disabled = true;
+    aiInsightsStatus.textContent = 'Generating insights for your matches…';
+    try {
+        const response = await fetch('/api/insights/', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                ...lastQuizPayload,
+                matches: lastMatches
+            }),
+            signal: AbortSignal.timeout(25000)
+        });
+        const data = await response.json();
+        if (!response.ok) throw new Error(data.detail || 'AI insights could not be generated.');
+        document.querySelectorAll('.quiz-ai-insight').forEach(element => {
+            const insight = data.insights[String(element.dataset.matchId)];
+            if (insight) {
+                element.textContent = `AI fit insight: ${insight}`;
+                element.hidden = false;
+            }
+        });
+        aiInsightsStatus.textContent = 'AI fit insights are ready.';
+    } catch (error) {
+        aiInsightsStatus.textContent = error.name === 'TimeoutError'
+            ? 'AI insights took too long to generate. Please try again.'
+            : error.message || 'AI insights could not be generated.';
+    } finally {
+        aiInsightsButton.disabled = false;
     }
 });
 

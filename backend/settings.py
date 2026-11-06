@@ -9,6 +9,8 @@ SECRET_KEY = 'django-insecure-key-for-dev'
 DEBUG = True
 ALLOWED_HOSTS = ['localhost', '127.0.0.1', '[::1]']
 SCORECARD_API_KEY = os.environ.get('SCORECARD_API_KEY', '')
+OPENAI_API_KEY = os.environ.get('OPENAI_API_KEY', '')
+OPENAI_MODEL = os.environ.get('OPENAI_MODEL', 'gpt-4o-mini')
 
 INSTALLED_APPS = [
     'django.contrib.admin',
@@ -67,3 +69,9 @@ DATABASES = {
 STATIC_URL = 'static/'
 STATICFILES_DIRS = [BASE_DIR / 'static']
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+REST_FRAMEWORK = {
+    'DEFAULT_THROTTLE_RATES': {
+        'ai_insights': '5/hour',
+    },
+}

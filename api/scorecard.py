@@ -1,4 +1,7 @@
+from concurrent.futures import ThreadPoolExecutor
+from functools import partial
 import json
+from math import ceil
 from urllib.error import HTTPError, URLError
 from urllib.parse import urlencode
 from urllib.request import Request, urlopen
@@ -12,6 +15,7 @@ CACHE_KEY = 'college_scorecard_schools_v1'
 CACHE_TTL_SECONDS = 12 * 60 * 60
 PAGE_SIZE = 100
 MAX_PAGES = 100
+MAX_CONCURRENT_REQUESTS = 8
 FIELDS = ','.join((
     'id',
     'school.name',
@@ -68,15 +72,24 @@ def get_scorecard_schools():
     if cached is not None:
         return cached
 
-    schools = []
-    for page in range(MAX_PAGES):
-        records, metadata = _request_page(api_key, page)
-        schools.extend(records)
-        total = metadata.get('total')
-        if not records or (isinstance(total, int) and len(schools) >= total):
-            break
+    schools, metadata = _request_page(api_key, 0)
+    total = metadata.get('total')
+    if isinstance(total, int):
+        page_count = ceil(total / PAGE_SIZE)
+        if page_count > MAX_PAGES:
+            raise ScorecardError('College Scorecard returned more pages than the service allows.')
+        with ThreadPoolExecutor(max_workers=MAX_CONCURRENT_REQUESTS) as executor:
+            for records, _ in executor.map(partial(_request_page, api_key), range(1, page_count)):
+                schools.extend(records)
     else:
-        raise ScorecardError('College Scorecard returned more pages than the service allows.')
+        for page in range(1, MAX_PAGES):
+            records, metadata = _request_page(api_key, page)
+            schools.extend(records)
+            total = metadata.get('total')
+            if not records or (isinstance(total, int) and len(schools) >= total):
+                break
+        else:
+            raise ScorecardError('College Scorecard returned more pages than the service allows.')
 
     cache.set(CACHE_KEY, schools, CACHE_TTL_SECONDS)
     return schools
@@ -118,6 +131,7 @@ def normalize_school(record):
         'id': record.get('id'),
         'name': name.strip(),
         'location': ', '.join(location_parts),
+        'state': state.strip().upper() if isinstance(state, str) and state.strip() else None,
         'setting': _campus_setting(record.get('school.locale')),
         'student_size': _number(record.get('latest.student.size')),
         'net_price': net_price,

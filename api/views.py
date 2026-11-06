@@ -2,12 +2,27 @@ from dataclasses import dataclass
 from math import ceil
 
 from django.conf import settings
-from rest_framework.decorators import api_view
+from rest_framework.decorators import api_view, throttle_classes
 from rest_framework.response import Response
 from rest_framework import status
+from rest_framework.throttling import ScopedRateThrottle
 
+from .insights import AIInsightError, generate_fit_insights
 from .models import College
 from .scorecard import ScorecardError, get_scorecard_schools, normalize_school
+
+
+US_STATE_CODES = {
+    'AL', 'AK', 'AZ', 'AR', 'CA', 'CO', 'CT', 'DE', 'FL', 'GA', 'HI', 'ID',
+    'IL', 'IN', 'IA', 'KS', 'KY', 'LA', 'ME', 'MD', 'MA', 'MI', 'MN', 'MS',
+    'MO', 'MT', 'NE', 'NV', 'NH', 'NJ', 'NM', 'NY', 'NC', 'ND', 'OH', 'OK',
+    'OR', 'PA', 'RI', 'SC', 'SD', 'TN', 'TX', 'UT', 'VT', 'VA', 'WA', 'WV',
+    'WI', 'WY',
+}
+
+
+class AIInsightThrottle(ScopedRateThrottle):
+    scope = 'ai_insights'
 
 
 @dataclass
@@ -15,6 +30,7 @@ class MatchCollege:
     id: int | str
     name: str
     location: str
+    state: str | None
     setting: str | None
     student_size: int | None
     party_score: int | None
@@ -159,6 +175,7 @@ def _score_college(college, preferences, weights, track, pain_points, scorecard_
         'id': college.id,
         'name': college.name,
         'location': college.location,
+        'state': college.state,
         'match_percentage': round(match_score * 100, 1),
         'explanation': 'Match score uses reported College Scorecard cost, enrollment, and campus location data where available.',
         'matching_factors': matching_factors,
@@ -174,6 +191,12 @@ def _local_colleges():
             id=college.id,
             name=college.name,
             location=college.location,
+            state=(
+                college.location.rsplit(',', 1)[-1].strip().upper()
+                if ',' in college.location
+                and college.location.rsplit(',', 1)[-1].strip().upper() in US_STATE_CODES
+                else None
+            ),
             setting=college.setting or None,
             student_size=college.class_size_avg,
             party_score=college.party_score,
@@ -196,6 +219,7 @@ def _scorecard_colleges(records):
             id=school['id'],
             name=school['name'],
             location=school['location'],
+            state=school['state'],
             setting=school['setting'],
             student_size=school['student_size'],
             party_score=None,
@@ -265,11 +289,33 @@ def calculate_matches(request):
     if preferences.get('pre_med_track'):
         notice += ' Your pre-med interest is noted, but pre-med advising and preparation are not included in this match score.'
 
+    state_preference = preferences.get('state')
+    if state_preference:
+        state_preference = str(state_preference).strip().upper()
+        if state_preference not in US_STATE_CODES:
+            state_preference = None
+        else:
+            if not scorecard_source:
+                notice += ' Local records are matched by state only when their location includes a U.S. state abbreviation.'
+            colleges = [college for college in colleges if college.state == state_preference]
+
     results = [
         _score_college(college, preferences, weights, track, pain_points, scorecard_source)
         for college in colleges
     ]
     results.sort(key=lambda result: result['match_percentage'], reverse=True)
+    if not state_preference:
+        diverse_results = []
+        other_results = []
+        seen_states = set()
+        for result in results:
+            state = result['state']
+            if state and state not in seen_states:
+                seen_states.add(state)
+                diverse_results.append(result)
+            else:
+                other_results.append(result)
+        results = diverse_results + other_results
     return Response({
         'status': 'success',
         'source': source,
@@ -341,6 +387,7 @@ def list_colleges(request):
         'id': college.id,
         'name': college.name,
         'location': college.location,
+        'state': college.state,
         'setting': college.setting,
         'student_size': college.student_size,
         'net_price': college.net_price_estimate,
@@ -358,3 +405,23 @@ def list_colleges(request):
         'pages': ceil(count / page_size),
         'results': results,
     })
+
+
+@api_view(['POST'])
+@throttle_classes([AIInsightThrottle])
+def generate_ai_insights(request):
+    preferences = request.data.get('preferences', {})
+    track = request.data.get('track', 'freshman')
+    pain_points = request.data.get('painPoints', [])
+    matches = request.data.get('matches', [])
+    try:
+        insights = generate_fit_insights(preferences, track, pain_points, matches)
+    except AIInsightError as error:
+        return Response(
+            {'status': 'error', 'detail': str(error)},
+            status=status.HTTP_503_SERVICE_UNAVAILABLE,
+        )
+    return Response({'status': 'success', 'insights': insights})
+
+
+generate_ai_insights.cls.throttle_scope = 'ai_insights'

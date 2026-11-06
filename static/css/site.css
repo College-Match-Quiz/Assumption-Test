@@ -224,6 +224,18 @@ main #major-other { width: 100%; min-height: 44px; padding: 10px 12px !important
 .quiz-page .choice-card:has(input:focus-visible) { outline-color: #b4d9c3; }
 .quiz-page .choice-card strong { color: #eff3ee; font-size: 14px; }
 .quiz-page .choice-card span { color: #aeb9c4; font-size: 12px; }
+.quiz-page .quiz-state-label { display: block; margin-bottom: 8px; color: #d6e0e5; font-size: 12px; font-weight: 600; }
+.quiz-page #state-preference {
+    width: min(100%, 420px);
+    min-height: 48px;
+    padding: 10px 12px;
+    border: 1px solid rgba(255, 255, 255, .16);
+    border-radius: 8px;
+    background: #19232f;
+    color: #eff3ee;
+    font: inherit;
+}
+.quiz-page #state-preference:focus { border-color: #70b7a1; outline: 2px solid rgba(112, 183, 161, .2); }
 .quiz-page .major-choice { min-height: 62px; padding-block: 13px; }
 .quiz-page .major-choice strong { font-size: 13px; }
 .quiz-page .major-other label { color: #d6e0e5; }
@@ -266,6 +278,40 @@ main #major-other { width: 100%; min-height: 44px; padding: 10px 12px !important
     border-color: rgba(112, 183, 161, .32);
     color: #c5e1d3;
 }
+.quiz-page .quiz-ai-controls {
+    margin: 18px 0;
+    padding: 16px;
+    border: 1px solid rgba(112, 183, 161, .24);
+    border-radius: 10px;
+    background: rgba(112, 183, 161, .06);
+}
+.quiz-page .quiz-ai-controls > p:first-child { margin: 0 0 12px; color: #aeb9c4; font-size: 12px; line-height: 1.65; }
+.quiz-page #ai-insights-btn {
+    min-height: 42px;
+    padding: 0 15px;
+    border: 1px solid #498d7d;
+    border-radius: 8px;
+    background: linear-gradient(125deg, #347b6d, #255b54);
+    color: #fff;
+    font: inherit;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+}
+.quiz-page #ai-insights-btn:disabled { cursor: wait; opacity: .6; }
+.quiz-page #ai-insights-btn[hidden] { display: none; }
+.quiz-page #ai-insights-status { margin: 10px 0 0; color: #b4d9c3; font-size: 12px; }
+.quiz-page .quiz-ai-insight {
+    margin: 16px 0 0 !important;
+    padding: 14px;
+    border-left: 3px solid #70b7a1;
+    border-radius: 0 8px 8px 0;
+    background: rgba(112, 183, 161, .08);
+    color: #d6e8df !important;
+    font-size: 13px;
+    line-height: 1.7;
+}
+.quiz-page .quiz-ai-insight[hidden] { display: none; }
 .quiz-page .quiz-result {
     padding: 22px;
     border-color: rgba(255, 255, 255, .11);
