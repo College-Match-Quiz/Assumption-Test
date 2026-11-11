@@ -96,7 +96,14 @@ def _explain_factor(college, preferences, scorecard_source):
     return matches, mismatches
 
 
-def _score_college(college, preferences, weights, track, pain_points, scorecard_source):
+def _score_college(college, preferences, weights, track, pain_points, scorecard_source, importance=None):
+    importance = importance or {
+        'academics': 3,
+        'campus': 3,
+        'location': 3,
+        'cost': 3,
+        'student_life': 3,
+    }
     pref_majors = preferences.get('majors', [])
     if pref_majors and college.majors is not None:
         college_majors = _parse_majors(college.majors)
@@ -108,15 +115,22 @@ def _score_college(college, preferences, weights, track, pain_points, scorecard_
     campus_scores = []
     setting_pref = preferences.get('setting')
     if setting_pref and college.setting:
-        campus_scores.append(1.0 if college.setting == setting_pref else 0.0)
+        campus_scores.append((1.0 if college.setting == setting_pref else 0.0, importance['location']))
     desired_residential = preferences.get('residential_rate')
     if desired_residential is not None and college.residential_rate is not None:
-        campus_scores.append(max(0, 1 - abs(college.residential_rate - desired_residential) / 100))
+        campus_scores.append((
+            max(0, 1 - abs(college.residential_rate - desired_residential) / 100),
+            importance['campus'],
+        ))
     student_size_max = preferences.get('student_size_max', preferences.get('class_size_max'))
     if student_size_max is not None and college.student_size is not None:
         size_score = 1 - max(0, college.student_size - student_size_max) / max(1, student_size_max)
-        campus_scores.append(max(0.0, size_score))
-    campus_score = sum(campus_scores) / len(campus_scores) if campus_scores else 0.5
+        campus_scores.append((max(0.0, size_score), importance['campus']))
+    campus_score = (
+        sum(score * factor for score, factor in campus_scores) / sum(factor for _, factor in campus_scores)
+        if campus_scores
+        else 0.5
+    )
 
     cost_score = 0.5
     max_tuition = preferences.get('max_tuition')
@@ -177,7 +191,7 @@ def _score_college(college, preferences, weights, track, pain_points, scorecard_
         'location': college.location,
         'state': college.state,
         'match_percentage': round(match_score * 100, 1),
-        'explanation': 'Match score uses reported College Scorecard cost, enrollment, and campus location data where available.',
+        'explanation': 'Match scores reflect your stated priorities and reported college data where available.',
         'matching_factors': matching_factors,
         'mismatches': mismatches,
         'transfer_friendly': college.transfer_friendly,
@@ -247,6 +261,28 @@ def calculate_matches(request):
     data = request.data
     track = data.get('track', 'freshman')
     preferences = data.get('preferences', {})
+    importance = data.get('importance')
+    if importance is not None:
+        importance_keys = {'academics', 'campus', 'location', 'cost', 'student_life'}
+        if not isinstance(importance, dict):
+            return Response(
+                {'status': 'error', 'detail': 'importance must be an object with ratings from 1 to 5.'},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        if any(
+            key in importance_keys
+            and (
+                isinstance(value, bool)
+                or not isinstance(value, int)
+                or not 1 <= value <= 5
+            )
+            for key, value in importance.items()
+        ):
+            return Response(
+                {'status': 'error', 'detail': 'Each importance rating must be a whole number from 1 to 5.'},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        importance = {key: importance.get(key, 3) for key in importance_keys}
     weights = data.get('weights', {
         'academics': 0.3,
         'campus': 0.2,
@@ -254,6 +290,32 @@ def calculate_matches(request):
         'social': 0.15,
         'practical': 0.15,
     })
+    if importance is not None:
+        adjusted_weights = weights.copy()
+        adjusted_weights['academics'] = weights.get('academics', 0) * importance['academics'] / 3
+        adjusted_weights['practical'] = weights.get('practical', 0) * importance['academics'] / 3
+        adjusted_weights['cost'] = weights.get('cost', 0) * importance['cost'] / 3
+        adjusted_weights['social'] = weights.get('social', 0) * importance['student_life'] / 3
+        setting_pref = preferences.get('setting')
+        campus_preferences = (
+            preferences.get('student_size_max', preferences.get('class_size_max')) is not None
+            or preferences.get('residential_rate') is not None
+        )
+        campus_importance = []
+        if campus_preferences:
+            campus_importance.append(importance['campus'])
+        if setting_pref:
+            campus_importance.append(importance['location'])
+        if not campus_importance:
+            campus_importance = [importance['campus'], importance['location']]
+        adjusted_weights['campus'] = (
+            weights.get('campus', 0) * sum(campus_importance) / (3 * len(campus_importance))
+        )
+        total_weight = sum(adjusted_weights.values())
+        if total_weight > 0:
+            weights = {key: value / total_weight for key, value in adjusted_weights.items()}
+        else:
+            weights = adjusted_weights
     pain_points = data.get('painPoints', [])
 
     scorecard_source = bool(getattr(settings, 'SCORECARD_API_KEY', ''))
@@ -300,7 +362,7 @@ def calculate_matches(request):
             colleges = [college for college in colleges if college.state == state_preference]
 
     results = [
-        _score_college(college, preferences, weights, track, pain_points, scorecard_source)
+        _score_college(college, preferences, weights, track, pain_points, scorecard_source, importance)
         for college in colleges
     ]
     results.sort(key=lambda result: result['match_percentage'], reverse=True)
@@ -414,8 +476,9 @@ def generate_ai_insights(request):
     track = request.data.get('track', 'freshman')
     pain_points = request.data.get('painPoints', [])
     matches = request.data.get('matches', [])
+    importance = request.data.get('importance')
     try:
-        insights = generate_fit_insights(preferences, track, pain_points, matches)
+        insights = generate_fit_insights(preferences, track, pain_points, matches, importance)
     except AIInsightError as error:
         return Response(
             {'status': 'error', 'detail': str(error)},

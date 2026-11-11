@@ -53,6 +53,75 @@ class CollegeMatchTests(APITestCase):
 		large_match = next(match for match in matches if match['id'] == self.large_class.id)
 		self.assertIn('Student population is above your preferred size', large_match['mismatches'])
 
+	def test_importance_ratings_change_match_ranking(self):
+		expensive_small = College.objects.create(
+			name='Expensive Small College',
+			location='North',
+			setting='urban',
+			class_size_avg=500,
+			party_score=5,
+			net_price_estimate=50000,
+		)
+		affordable_large = College.objects.create(
+			name='Affordable Large College',
+			location='South',
+			setting='urban',
+			class_size_avg=5000,
+			party_score=5,
+			net_price_estimate=10000,
+		)
+		payload = {
+			'track': 'freshman',
+			'preferences': {'student_size_max': 1000, 'max_tuition': 20000},
+		}
+
+		campus_focused = self.client.post('/api/match/', {
+			**payload,
+			'importance': {'campus': 5, 'cost': 1},
+		}, format='json')
+		cost_focused = self.client.post('/api/match/', {
+			**payload,
+			'importance': {'campus': 1, 'cost': 5},
+		}, format='json')
+
+		self.assertEqual(campus_focused.status_code, status.HTTP_200_OK)
+		self.assertEqual(cost_focused.status_code, status.HTTP_200_OK)
+		campus_order = [match['id'] for match in campus_focused.data['matches']]
+		cost_order = [match['id'] for match in cost_focused.data['matches']]
+		self.assertLess(campus_order.index(expensive_small.id), campus_order.index(affordable_large.id))
+		self.assertLess(cost_order.index(affordable_large.id), cost_order.index(expensive_small.id))
+
+	def test_importance_ratings_must_be_between_one_and_five(self):
+		response = self.client.post('/api/match/', {
+			'importance': {'cost': 6},
+		}, format='json')
+
+		self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+		self.assertIn('whole number from 1 to 5', response.data['detail'])
+
+	def test_neutral_importance_ratings_preserve_existing_scores(self):
+		payload = {
+			'track': 'freshman',
+			'preferences': {'setting': 'urban', 'student_size_max': 20},
+		}
+		without_importance = self.client.post('/api/match/', payload, format='json')
+		with_neutral_importance = self.client.post('/api/match/', {
+			**payload,
+			'importance': {
+				'academics': 3,
+				'campus': 3,
+				'location': 3,
+				'cost': 3,
+				'student_life': 3,
+			},
+		}, format='json')
+
+		self.assertEqual(with_neutral_importance.status_code, status.HTTP_200_OK)
+		self.assertEqual(
+			with_neutral_importance.data['matches'],
+			without_importance.data['matches'],
+		)
+
 	@patch('api.views.get_scorecard_schools')
 	def test_scorecard_data_is_used_for_matches(self, get_scorecard_schools):
 		get_scorecard_schools.return_value = [
@@ -241,12 +310,13 @@ class AIInsightTests(APITestCase):
 			response = self.client.post('/api/insights/', {
 				'track': 'freshman',
 				'preferences': {'state': 'NY'},
+				'importance': {'cost': 5},
 				'matches': matches,
 			}, format='json')
 
 		self.assertEqual(response.status_code, status.HTTP_200_OK)
 		self.assertEqual(response.data['insights'], {'101': 'A small-campus fit.'})
-		generate.assert_called_once_with({'state': 'NY'}, 'freshman', [], matches)
+		generate.assert_called_once_with({'state': 'NY'}, 'freshman', [], matches, {'cost': 5})
 
 	@override_settings(OPENAI_API_KEY='')
 	def test_ai_insights_report_missing_key(self):
@@ -312,6 +382,7 @@ class AIInsightTests(APITestCase):
 				'freshman',
 				[],
 				matches,
+				{'cost': 5, 'student_life': True, 'unrecognized': 4},
 			)
 
 		request = urlopen.call_args.args[0]
@@ -321,4 +392,5 @@ class AIInsightTests(APITestCase):
 		self.assertEqual(request.get_header('Authorization'), 'Bearer test-key')
 		self.assertEqual(payload['model'], 'test-model')
 		self.assertEqual(user_context['preferences'], {'state': 'NY'})
+		self.assertEqual(user_context['importance'], {'cost': 5})
 		self.assertEqual(user_context['matches'][0]['scorecard_details'], {'student_size': 5000})

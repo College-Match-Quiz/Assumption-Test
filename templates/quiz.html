@@ -9,7 +9,7 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="{% static 'css/site.css' %}?v=20261106-state-filter">
+    <link rel="stylesheet" href="{% static 'css/site.css' %}?v=20261111-importance">
     <script src="{% static 'js/site.js' %}" defer></script>
     <style>body { font-family: 'Inter', sans-serif; } .font-display { font-family: 'Fraunces', serif; }</style>
 </head>
@@ -221,6 +221,43 @@
             </div>
         </fieldset>
 
+        <fieldset class="quiz-step" data-topic="Your priorities" hidden>
+            <legend>How important are these parts of college fit?</legend>
+            <p class="quiz-step-hint">Your ratings help us give more weight to the things that matter most to you.</p>
+            <div class="importance-list">
+                <div class="importance-item">
+                    <label for="importance-academics">Academic fit</label>
+                    <input id="importance-academics" class="importance-slider" type="range" name="importance_academics" min="1" max="5" step="1" value="3">
+                    <div class="importance-ticks" aria-hidden="true"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span></div>
+                    <div class="importance-scale"><span>Not important</span><output for="importance-academics">3/5</output><span>Extremely important</span></div>
+                </div>
+                <div class="importance-item">
+                    <label for="importance-campus">Campus culture</label>
+                    <input id="importance-campus" class="importance-slider" type="range" name="importance_campus" min="1" max="5" step="1" value="3">
+                    <div class="importance-ticks" aria-hidden="true"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span></div>
+                    <div class="importance-scale"><span>Not important</span><output for="importance-campus">3/5</output><span>Extremely important</span></div>
+                </div>
+                <div class="importance-item">
+                    <label for="importance-location">Location and lifestyle</label>
+                    <input id="importance-location" class="importance-slider" type="range" name="importance_location" min="1" max="5" step="1" value="3">
+                    <div class="importance-ticks" aria-hidden="true"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span></div>
+                    <div class="importance-scale"><span>Not important</span><output for="importance-location">3/5</output><span>Extremely important</span></div>
+                </div>
+                <div class="importance-item">
+                    <label for="importance-cost">Cost and value</label>
+                    <input id="importance-cost" class="importance-slider" type="range" name="importance_cost" min="1" max="5" step="1" value="3">
+                    <div class="importance-ticks" aria-hidden="true"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span></div>
+                    <div class="importance-scale"><span>Not important</span><output for="importance-cost">3/5</output><span>Extremely important</span></div>
+                </div>
+                <div class="importance-item">
+                    <label for="importance-student-life">Student life</label>
+                    <input id="importance-student-life" class="importance-slider" type="range" name="importance_student_life" min="1" max="5" step="1" value="3">
+                    <div class="importance-ticks" aria-hidden="true"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span></div>
+                    <div class="importance-scale"><span>Not important</span><output for="importance-student-life">3/5</output><span>Extremely important</span></div>
+                </div>
+            </div>
+        </fieldset>
+
         <div class="quiz-navigation">
             <button id="back-btn" class="quiz-back" type="button" hidden>Back</button>
             <span id="step-topic-bottom" aria-hidden="true"></span>
@@ -299,6 +336,10 @@ function collectForm() {
     const studentSize = selectedValue('student_size_max');
     const residentialRate = selectedValue('residential_rate');
     const painPoints = Array.from(form.querySelectorAll('input[name="painPoints"]:checked')).map(input => input.value);
+    const importance = Object.fromEntries(
+        Array.from(form.querySelectorAll('.importance-slider'))
+            .map(input => [input.name.replace('importance_', ''), Number(input.value)])
+    );
     return {
         track: selectedValue('track'),
         preferences: {
@@ -311,7 +352,8 @@ function collectForm() {
             student_size_max: studentSize === 'any' ? null : Number(studentSize),
             residential_rate: residentialRate === 'any' ? null : Number(residentialRate)
         },
-        painPoints
+        painPoints,
+        importance
     };
 }
 
@@ -413,6 +455,11 @@ form.addEventListener('change', event => {
     const hasPreMedMajor = form.querySelector('input[name="majorChoice"][data-pre-med-relevant]:checked');
     preMedOption.hidden = !hasPreMedMajor;
     if (!hasPreMedMajor) preMedInput.checked = false;
+});
+form.addEventListener('input', event => {
+    if (event.target.matches('.importance-slider')) {
+        event.target.nextElementSibling.nextElementSibling.querySelector('output').value = `${event.target.value}/5`;
+    }
 });
 document.getElementById('restart-btn').addEventListener('click', () => {
     document.getElementById('results').hidden = true;

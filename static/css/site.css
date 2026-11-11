@@ -247,6 +247,15 @@ main #major-other { width: 100%; min-height: 44px; padding: 10px 12px !important
 }
 .quiz-page main #major-other::placeholder { color: #788897; }
 .quiz-page main #major-other:focus { border-color: #70b7a1 !important; outline: 2px solid rgba(112, 183, 161, .2); }
+.quiz-page .importance-list { display: grid; gap: 17px; }
+.quiz-page .importance-item { display: grid; gap: 8px; }
+.quiz-page .importance-item > label { color: #eff3ee; font-size: 13px; font-weight: 600; }
+.quiz-page .importance-slider { width: 100%; accent-color: #70b7a1; cursor: pointer; }
+.quiz-page .importance-slider:focus-visible { outline: 2px solid #b4d9c3; outline-offset: 4px; }
+.quiz-page .importance-ticks { display: grid; grid-template-columns: repeat(5, 1fr); margin-top: -7px; color: #aeb9c4; font-size: 10px; text-align: center; }
+.quiz-page .importance-scale { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 8px; color: #aeb9c4; font-size: 11px; }
+.quiz-page .importance-scale span:last-child { text-align: right; }
+.quiz-page .importance-scale output { color: #b4d9c3; font-weight: 700; }
 .quiz-page .quiz-navigation {
     padding: 18px 30px;
     border-top: 1px solid rgba(255, 255, 255, .09);
