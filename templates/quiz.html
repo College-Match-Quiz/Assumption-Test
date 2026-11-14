@@ -9,9 +9,42 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="{% static 'css/site.css' %}?v=20261111-importance">
+    <link rel="stylesheet" href="{% static 'css/site.css' %}?v=20261114-state-picker">
     <script src="{% static 'js/site.js' %}" defer></script>
-    <style>body { font-family: 'Inter', sans-serif; } .font-display { font-family: 'Fraunces', serif; }</style>
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        .font-display { font-family: 'Fraunces', serif; }
+
+        /* State picker */
+        .state-picker { display: flex; flex-direction: column; gap: 14px; margin-top: 8px; }
+        .state-picker .sp-top { display: flex; align-items: center; justify-content: space-between; gap: 12px; min-height: 44px; padding: 8px 12px; border: 1px solid rgba(255, 255, 255, .16); border-radius: 12px; background: #0e151d; }
+        .sp-chips { display: flex; flex-wrap: wrap; gap: 6px; flex: 1; }
+        .sp-empty { font-size: 13px; color: #aeb9c4; }
+        .sp-chip { display: inline-flex; align-items: center; gap: 6px; padding: 4px 6px 4px 10px; border-radius: 999px; background: #2D3648; color: #fff; font-size: 13px; font-weight: 600; }
+        .sp-chip button { display: grid; place-items: center; width: 18px; height: 18px; border: 0; border-radius: 50%; background: rgba(255,255,255,.2); color: #fff; font-size: 12px; line-height: 1; cursor: pointer; }
+        .sp-chip button:hover { background: rgba(255,255,255,.35); }
+        #state-selection-count { flex-shrink: 0; font-size: 12px; font-weight: 600; color: #b4d9c3; white-space: nowrap; }
+
+        .sp-search { position: relative; }
+        .sp-search svg { position: absolute; left: 14px; top: 50%; width: 16px; height: 16px; transform: translateY(-50%); color: #94a3b8; pointer-events: none; }
+        .sp-search input#state-search { width: 100%; padding: 11px 14px 11px 40px; border: 1px solid rgba(255, 255, 255, .16); border-radius: 10px; font-size: 14px; background: #19232f; color: #eff3ee; }
+        .sp-search input#state-search::placeholder { color: #aeb9c4; }
+        .sp-search input#state-search:focus { outline: 2px solid #70b7a1; outline-offset: 1px; border-color: transparent; }
+
+        #state-option-list.state-option-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 8px; max-height: 320px; overflow-y: auto; padding: 2px; }
+        #state-option-list .state-option { position: relative; display: flex; align-items: center; gap: 10px; padding: 10px 12px; border: 1px solid rgba(255, 255, 255, .12); border-radius: 10px; background: #19232f; font-size: 14px; color: #d6e0e5; cursor: pointer; transition: border-color .15s, background .15s, box-shadow .15s; }
+        #state-option-list .state-option[hidden] { display: none; }
+        #state-option-list .state-option:hover { border-color: #70b7a1; background: #1d2c37; }
+        #state-option-list .state-option input { position: absolute; opacity: 0; inset: 0; margin: 0; cursor: pointer; }
+        .sp-code { display: grid; place-items: center; width: 30px; height: 24px; border-radius: 6px; background: #263440; font-size: 11px; font-weight: 700; letter-spacing: .04em; color: #c4d2d7; }
+        #state-option-list .state-option:has(input:checked) { border-color: #70b7a1; background: linear-gradient(145deg, rgba(53, 117, 101, .32), rgba(32, 63, 59, .3)); box-shadow: inset 0 0 0 1px rgba(112, 183, 161, .35); font-weight: 600; color: #eff3ee; }
+        #state-option-list .state-option:has(input:checked) .sp-code { background: #2D3648; color: #fff; }
+        #state-option-list .state-option:has(input:focus-visible) { outline: 2px solid #506963; outline-offset: 2px; }
+        #state-option-list .state-option:has(input:disabled) { opacity: .45; cursor: not-allowed; }
+        #state-option-list .state-option input:disabled { cursor: not-allowed; }
+        .sp-none { grid-column: 1 / -1; padding: 16px; text-align: center; font-size: 14px; color: #64748b; }
+        .state-selection-message { font-size: 13px; color: #64748b; margin: 0; }
+    </style>
 </head>
 <body class="quiz-page min-h-screen text-slate-800 antialiased">
 <header class="sticky top-0 z-10 border-b border-slate-200/80 bg-[#F1F3F4]/95 backdrop-blur-sm">
@@ -55,62 +88,21 @@
         </fieldset>
 
         <fieldset class="quiz-step" data-topic="Preferred state" hidden>
-            <legend>What state would you like to attend college in?</legend>
-            <p class="quiz-step-hint">Choose a state to limit your matches, or keep it open to see schools around the country.</p>
-            <label class="quiz-state-label" for="state-preference">Preferred state</label>
-            <select id="state-preference" name="state">
-                <option value="">Any state</option>
-                <option value="AL">Alabama</option>
-                <option value="AK">Alaska</option>
-                <option value="AZ">Arizona</option>
-                <option value="AR">Arkansas</option>
-                <option value="CA">California</option>
-                <option value="CO">Colorado</option>
-                <option value="CT">Connecticut</option>
-                <option value="DE">Delaware</option>
-                <option value="FL">Florida</option>
-                <option value="GA">Georgia</option>
-                <option value="HI">Hawaii</option>
-                <option value="ID">Idaho</option>
-                <option value="IL">Illinois</option>
-                <option value="IN">Indiana</option>
-                <option value="IA">Iowa</option>
-                <option value="KS">Kansas</option>
-                <option value="KY">Kentucky</option>
-                <option value="LA">Louisiana</option>
-                <option value="ME">Maine</option>
-                <option value="MD">Maryland</option>
-                <option value="MA">Massachusetts</option>
-                <option value="MI">Michigan</option>
-                <option value="MN">Minnesota</option>
-                <option value="MS">Mississippi</option>
-                <option value="MO">Missouri</option>
-                <option value="MT">Montana</option>
-                <option value="NE">Nebraska</option>
-                <option value="NV">Nevada</option>
-                <option value="NH">New Hampshire</option>
-                <option value="NJ">New Jersey</option>
-                <option value="NM">New Mexico</option>
-                <option value="NY">New York</option>
-                <option value="NC">North Carolina</option>
-                <option value="ND">North Dakota</option>
-                <option value="OH">Ohio</option>
-                <option value="OK">Oklahoma</option>
-                <option value="OR">Oregon</option>
-                <option value="PA">Pennsylvania</option>
-                <option value="RI">Rhode Island</option>
-                <option value="SC">South Carolina</option>
-                <option value="SD">South Dakota</option>
-                <option value="TN">Tennessee</option>
-                <option value="TX">Texas</option>
-                <option value="UT">Utah</option>
-                <option value="VT">Vermont</option>
-                <option value="VA">Virginia</option>
-                <option value="WA">Washington</option>
-                <option value="WV">West Virginia</option>
-                <option value="WI">Wisconsin</option>
-                <option value="WY">Wyoming</option>
-            </select>
+            <legend>Which states are in your top five?</legend>
+            <p class="quiz-step-hint">Choose up to five states to focus your college matches. Leave them all blank to search nationwide.</p>
+            <div class="state-picker">
+                <div class="sp-top">
+                    <div id="state-chips" class="sp-chips" aria-live="polite"></div>
+                    <span id="state-selection-count" aria-live="polite">0 of 5 selected</span>
+                </div>
+                <div class="sp-search">
+                    <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="9" cy="9" r="6"/><path d="m14 14 4 4"/></svg>
+                    <label class="sr-only" for="state-search">Find a state</label>
+                    <input id="state-search" type="search" placeholder="Search states" autocomplete="off">
+                </div>
+                <div id="state-option-list" class="state-option-list" role="group" aria-label="Choose up to five preferred states"></div>
+                <p id="state-selection-message" class="state-selection-message" role="status" aria-live="polite">Choose up to five, or leave blank for any state.</p>
+            </div>
         </fieldset>
 
         <fieldset class="quiz-step" data-topic="What you want to study" hidden>
@@ -154,6 +146,12 @@
                 <p class="quiz-step-hint mb-0 mt-2">This is noted as an interest, but pre-med advising and preparation aren’t included in the match score.</p>
             </div>
             <div class="major-other"><label for="major-other">Or add another area</label><input id="major-other" type="text" placeholder="Separate multiple interests with commas" autocomplete="off"></div>
+            <div class="importance-item question-importance">
+                <label for="importance-academics">How important is your choice of study area?</label>
+                <input id="importance-academics" class="importance-slider" type="range" name="importance_academics" min="1" max="5" step="1" value="3">
+                <div class="importance-ticks" aria-hidden="true"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span></div>
+                <div class="importance-scale"><span>Not important</span><output for="importance-academics">3/5</output><span>Extremely important</span></div>
+            </div>
         </fieldset>
 
         <fieldset class="quiz-step" data-topic="Campus setting" hidden>
@@ -164,6 +162,12 @@
                 <label class="choice-card"><input type="radio" name="setting" value="urban"><strong>City</strong><span>Close to an active urban center.</span></label>
                 <label class="choice-card"><input type="radio" name="setting" value="suburban"><strong>Suburban</strong><span>A quieter area near a city.</span></label>
                 <label class="choice-card"><input type="radio" name="setting" value="rural"><strong>Rural</strong><span>More open space and a small-town feel.</span></label>
+            </div>
+            <div class="importance-item question-importance">
+                <label for="importance-setting">How important is campus location to you?</label>
+                <input id="importance-setting" class="importance-slider" type="range" name="importance_setting" min="1" max="5" step="1" value="3">
+                <div class="importance-ticks" aria-hidden="true"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span></div>
+                <div class="importance-scale"><span>Not important</span><output for="importance-setting">3/5</output><span>Extremely important</span></div>
             </div>
         </fieldset>
 
@@ -176,6 +180,12 @@
                 <label class="choice-card"><input type="radio" name="student_size_max" value="15000"><strong>15,000 or fewer</strong><span>A medium-sized community.</span></label>
                 <label class="choice-card"><input type="radio" name="student_size_max" value="30000"><strong>30,000 or fewer</strong><span>Keep larger schools in the mix.</span></label>
             </div>
+            <div class="importance-item question-importance">
+                <label for="importance-student-size">How important is campus size to you?</label>
+                <input id="importance-student-size" class="importance-slider" type="range" name="importance_student_size" min="1" max="5" step="1" value="3">
+                <div class="importance-ticks" aria-hidden="true"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span></div>
+                <div class="importance-scale"><span>Not important</span><output for="importance-student-size">3/5</output><span>Extremely important</span></div>
+            </div>
         </fieldset>
 
         <fieldset class="quiz-step" data-topic="Campus social life" hidden>
@@ -185,6 +195,12 @@
                 <label class="choice-card"><input type="radio" name="party_pref" value="any" checked><strong>Some of both</strong><span>Keep my options open.</span></label>
                 <label class="choice-card"><input type="radio" name="party_pref" value="low"><strong>Low-key</strong><span>Quieter social life is a plus.</span></label>
                 <label class="choice-card"><input type="radio" name="party_pref" value="high"><strong>High-energy</strong><span>I enjoy a lively scene.</span></label>
+            </div>
+            <div class="importance-item question-importance">
+                <label for="importance-party">How important is your preferred social scene?</label>
+                <input id="importance-party" class="importance-slider" type="range" name="importance_party_pref" min="1" max="5" step="1" value="3">
+                <div class="importance-ticks" aria-hidden="true"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span></div>
+                <div class="importance-scale"><span>Not important</span><output for="importance-party">3/5</output><span>Extremely important</span></div>
             </div>
         </fieldset>
 
@@ -197,6 +213,12 @@
                 <label class="choice-card"><input type="radio" name="max_tuition" value="30000"><strong>Up to $30,000</strong><span>Estimated yearly net price.</span></label>
                 <label class="choice-card"><input type="radio" name="max_tuition" value="50000"><strong>Up to $50,000</strong><span>Estimated yearly net price.</span></label>
                 <label class="choice-card"><input type="radio" name="max_tuition" value="75000"><strong>Up to $75,000</strong><span>Estimated yearly net price.</span></label>
+            </div>
+            <div class="importance-item question-importance">
+                <label for="importance-budget">How important is staying within your budget?</label>
+                <input id="importance-budget" class="importance-slider" type="range" name="importance_max_tuition" min="1" max="5" step="1" value="3">
+                <div class="importance-ticks" aria-hidden="true"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span></div>
+                <div class="importance-scale"><span>Not important</span><output for="importance-budget">3/5</output><span>Extremely important</span></div>
             </div>
         </fieldset>
 
@@ -219,42 +241,11 @@
                 <label class="choice-card"><input type="checkbox" name="painPoints" value="too_big"><strong>Very large classes</strong></label>
                 <label class="choice-card"><input type="checkbox" name="painPoints" value="commuter"><strong>A mostly commuter campus</strong></label>
             </div>
-        </fieldset>
-
-        <fieldset class="quiz-step" data-topic="Your priorities" hidden>
-            <legend>How important are these parts of college fit?</legend>
-            <p class="quiz-step-hint">Your ratings help us give more weight to the things that matter most to you.</p>
-            <div class="importance-list">
-                <div class="importance-item">
-                    <label for="importance-academics">Academic fit</label>
-                    <input id="importance-academics" class="importance-slider" type="range" name="importance_academics" min="1" max="5" step="1" value="3">
-                    <div class="importance-ticks" aria-hidden="true"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span></div>
-                    <div class="importance-scale"><span>Not important</span><output for="importance-academics">3/5</output><span>Extremely important</span></div>
-                </div>
-                <div class="importance-item">
-                    <label for="importance-campus">Campus culture</label>
-                    <input id="importance-campus" class="importance-slider" type="range" name="importance_campus" min="1" max="5" step="1" value="3">
-                    <div class="importance-ticks" aria-hidden="true"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span></div>
-                    <div class="importance-scale"><span>Not important</span><output for="importance-campus">3/5</output><span>Extremely important</span></div>
-                </div>
-                <div class="importance-item">
-                    <label for="importance-location">Location and lifestyle</label>
-                    <input id="importance-location" class="importance-slider" type="range" name="importance_location" min="1" max="5" step="1" value="3">
-                    <div class="importance-ticks" aria-hidden="true"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span></div>
-                    <div class="importance-scale"><span>Not important</span><output for="importance-location">3/5</output><span>Extremely important</span></div>
-                </div>
-                <div class="importance-item">
-                    <label for="importance-cost">Cost and value</label>
-                    <input id="importance-cost" class="importance-slider" type="range" name="importance_cost" min="1" max="5" step="1" value="3">
-                    <div class="importance-ticks" aria-hidden="true"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span></div>
-                    <div class="importance-scale"><span>Not important</span><output for="importance-cost">3/5</output><span>Extremely important</span></div>
-                </div>
-                <div class="importance-item">
-                    <label for="importance-student-life">Student life</label>
-                    <input id="importance-student-life" class="importance-slider" type="range" name="importance_student_life" min="1" max="5" step="1" value="3">
-                    <div class="importance-ticks" aria-hidden="true"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span></div>
-                    <div class="importance-scale"><span>Not important</span><output for="importance-student-life">3/5</output><span>Extremely important</span></div>
-                </div>
+            <div class="importance-item question-importance">
+                <label for="importance-transfer">How important is avoiding these past experiences?</label>
+                <input id="importance-transfer" class="importance-slider" type="range" name="importance_transfer_priorities" min="1" max="5" step="1" value="3">
+                <div class="importance-ticks" aria-hidden="true"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span></div>
+                <div class="importance-scale"><span>Not important</span><output for="importance-transfer">3/5</output><span>Extremely important</span></div>
             </div>
         </fieldset>
 
@@ -296,9 +287,80 @@ const aiInsightsButton = document.getElementById('ai-insights-btn');
 const aiInsightsStatus = document.getElementById('ai-insights-status');
 const preMedOption = document.getElementById('pre-med-option');
 const preMedInput = document.getElementById('pre-med-track');
+const stateOptionList = document.getElementById('state-option-list');
+const stateSearch = document.getElementById('state-search');
+const stateSelectionCount = document.getElementById('state-selection-count');
+const stateSelectionMessage = document.getElementById('state-selection-message');
+const stateChips = document.getElementById('state-chips');
+const MAX_PREFERRED_STATES = 5;
+const STATE_OPTIONS = [
+    ['Alabama', 'AL'], ['Alaska', 'AK'], ['Arizona', 'AZ'], ['Arkansas', 'AR'],
+    ['California', 'CA'], ['Colorado', 'CO'], ['Connecticut', 'CT'], ['Delaware', 'DE'],
+    ['Florida', 'FL'], ['Georgia', 'GA'], ['Hawaii', 'HI'], ['Idaho', 'ID'],
+    ['Illinois', 'IL'], ['Indiana', 'IN'], ['Iowa', 'IA'], ['Kansas', 'KS'],
+    ['Kentucky', 'KY'], ['Louisiana', 'LA'], ['Maine', 'ME'], ['Maryland', 'MD'],
+    ['Massachusetts', 'MA'], ['Michigan', 'MI'], ['Minnesota', 'MN'], ['Mississippi', 'MS'],
+    ['Missouri', 'MO'], ['Montana', 'MT'], ['Nebraska', 'NE'], ['Nevada', 'NV'],
+    ['New Hampshire', 'NH'], ['New Jersey', 'NJ'], ['New Mexico', 'NM'], ['New York', 'NY'],
+    ['North Carolina', 'NC'], ['North Dakota', 'ND'], ['Ohio', 'OH'], ['Oklahoma', 'OK'],
+    ['Oregon', 'OR'], ['Pennsylvania', 'PA'], ['Rhode Island', 'RI'], ['South Carolina', 'SC'],
+    ['South Dakota', 'SD'], ['Tennessee', 'TN'], ['Texas', 'TX'], ['Utah', 'UT'],
+    ['Vermont', 'VT'], ['Virginia', 'VA'], ['Washington', 'WA'], ['West Virginia', 'WV'],
+    ['Wisconsin', 'WI'], ['Wyoming', 'WY']
+];
 let currentStep = 0;
 let lastQuizPayload = null;
 let lastMatches = [];
+
+STATE_OPTIONS.forEach(([name, code]) => {
+    const label = document.createElement('label');
+    label.className = 'state-option';
+    label.dataset.stateName = name.toLowerCase();
+    const checkbox = document.createElement('input');
+    checkbox.type = 'checkbox';
+    checkbox.name = 'preferredStates';
+    checkbox.value = code;
+    const codeEl = document.createElement('span');
+    codeEl.className = 'sp-code';
+    codeEl.textContent = code;
+    const stateName = document.createElement('span');
+    stateName.textContent = name;
+    label.append(checkbox, codeEl, stateName);
+    stateOptionList.appendChild(label);
+});
+
+function updateStateSelection() {
+    const selected = Array.from(form.querySelectorAll('input[name="preferredStates"]:checked'));
+    stateSelectionCount.textContent = `${selected.length} of ${MAX_PREFERRED_STATES} selected`;
+    const atLimit = selected.length >= MAX_PREFERRED_STATES;
+    form.querySelectorAll('input[name="preferredStates"]:not(:checked)').forEach(input => {
+        input.disabled = atLimit;
+    });
+    stateChips.replaceChildren();
+    if (!selected.length) {
+        const empty = document.createElement('span');
+        empty.className = 'sp-empty';
+        empty.textContent = 'Any state (nationwide)';
+        stateChips.appendChild(empty);
+    }
+    selected.forEach(input => {
+        const stateLabel = STATE_OPTIONS.find(([, code]) => code === input.value)[0];
+        const chip = document.createElement('span');
+        chip.className = 'sp-chip';
+        chip.append(stateLabel);
+        const remove = document.createElement('button');
+        remove.type = 'button';
+        remove.setAttribute('aria-label', `Remove ${stateLabel}`);
+        remove.textContent = '×';
+        remove.addEventListener('click', () => {
+            input.checked = false;
+            input.dispatchEvent(new Event('change', { bubbles: true }));
+        });
+        chip.appendChild(remove);
+        stateChips.appendChild(chip);
+    });
+}
+updateStateSelection();
 
 function activeSteps() {
     const isTransfer = form.querySelector('input[name="track"]:checked').value === 'transfer';
@@ -330,7 +392,8 @@ function collectForm() {
     const customMajors = document.getElementById('major-other').value.split(',').map(value => value.trim()).filter(Boolean);
     majors.push(...customMajors);
     const setting = selectedValue('setting');
-    const state = form.querySelector('select[name="state"]').value;
+    const states = Array.from(form.querySelectorAll('input[name="preferredStates"]:checked'))
+        .map(input => input.value);
     const partyPreference = selectedValue('party_pref');
     const maxTuition = selectedValue('max_tuition');
     const studentSize = selectedValue('student_size_max');
@@ -345,7 +408,7 @@ function collectForm() {
         preferences: {
             majors,
             pre_med_track: preMedInput.checked,
-            state: state || null,
+            states,
             setting: setting === 'any' ? null : setting,
             party_pref: partyPreference === 'any' ? null : partyPreference,
             max_tuition: maxTuition === 'any' ? null : Number(maxTuition),
@@ -379,7 +442,7 @@ function renderMatches(matches) {
     if (!matches.length) {
         const empty = document.createElement('p');
         empty.className = 'quiz-result';
-        empty.textContent = 'No colleges in our current data match this state and your preferences. Try another state or choose “Any state.”';
+        empty.textContent = 'No colleges in our current data match your selected states and preferences. Try removing a state or adjusting your answers.';
         list.appendChild(empty);
         return;
     }
@@ -452,9 +515,36 @@ backButton.addEventListener('click', () => { currentStep = Math.max(0, currentSt
 nextButton.addEventListener('click', () => { currentStep = Math.min(activeSteps().length - 1, currentStep + 1); showStep(); });
 form.addEventListener('change', event => {
     if (event.target.name === 'track') showStep();
+    if (event.target.name === 'preferredStates') {
+        if (event.target.checked && form.querySelectorAll('input[name="preferredStates"]:checked').length > MAX_PREFERRED_STATES) {
+            event.target.checked = false;
+            stateSelectionMessage.textContent = `You can choose up to ${MAX_PREFERRED_STATES} states. Uncheck one to choose another.`;
+        } else {
+            stateSelectionMessage.textContent = 'Choose up to five, or leave blank for any state.';
+        }
+        updateStateSelection();
+    }
     const hasPreMedMajor = form.querySelector('input[name="majorChoice"][data-pre-med-relevant]:checked');
     preMedOption.hidden = !hasPreMedMajor;
     if (!hasPreMedMajor) preMedInput.checked = false;
+});
+stateSearch.addEventListener('input', () => {
+    const query = stateSearch.value.trim().toLowerCase();
+    let visible = 0;
+    stateOptionList.querySelectorAll('.state-option').forEach(option => {
+        const match = option.dataset.stateName.includes(query);
+        option.hidden = !match;
+        if (match) visible++;
+    });
+    let none = stateOptionList.querySelector('.sp-none');
+    if (!visible && !none) {
+        none = document.createElement('p');
+        none.className = 'sp-none';
+        none.textContent = 'No states match your search.';
+        stateOptionList.appendChild(none);
+    } else if (visible && none) {
+        none.remove();
+    }
 });
 form.addEventListener('input', event => {
     if (event.target.matches('.importance-slider')) {

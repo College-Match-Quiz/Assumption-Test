@@ -91,6 +91,44 @@ class CollegeMatchTests(APITestCase):
 		self.assertLess(campus_order.index(expensive_small.id), campus_order.index(affordable_large.id))
 		self.assertLess(cost_order.index(affordable_large.id), cost_order.index(expensive_small.id))
 
+	def test_per_question_importance_ratings_change_match_ranking(self):
+		expensive_small = College.objects.create(
+			name='Per-question Expensive Small College',
+			location='North',
+			setting='urban',
+			class_size_avg=500,
+			party_score=5,
+			net_price_estimate=50000,
+		)
+		affordable_large = College.objects.create(
+			name='Per-question Affordable Large College',
+			location='South',
+			setting='urban',
+			class_size_avg=5000,
+			party_score=5,
+			net_price_estimate=10000,
+		)
+		payload = {
+			'track': 'freshman',
+			'preferences': {'student_size_max': 1000, 'max_tuition': 20000},
+		}
+
+		size_focused = self.client.post('/api/match/', {
+			**payload,
+			'importance': {'student_size': 5, 'max_tuition': 1},
+		}, format='json')
+		cost_focused = self.client.post('/api/match/', {
+			**payload,
+			'importance': {'student_size': 1, 'max_tuition': 5},
+		}, format='json')
+
+		self.assertEqual(size_focused.status_code, status.HTTP_200_OK)
+		self.assertEqual(cost_focused.status_code, status.HTTP_200_OK)
+		size_order = [match['id'] for match in size_focused.data['matches']]
+		cost_order = [match['id'] for match in cost_focused.data['matches']]
+		self.assertLess(size_order.index(expensive_small.id), size_order.index(affordable_large.id))
+		self.assertLess(cost_order.index(affordable_large.id), cost_order.index(expensive_small.id))
+
 	def test_importance_ratings_must_be_between_one_and_five(self):
 		response = self.client.post('/api/match/', {
 			'importance': {'cost': 6},
@@ -179,7 +217,7 @@ class CollegeMatchTests(APITestCase):
 		get_scorecard_schools.assert_called_once_with()
 
 	@patch('api.views.get_scorecard_schools')
-	def test_state_preference_filters_scorecard_matches(self, get_scorecard_schools):
+	def test_multiple_state_preferences_filter_scorecard_matches(self, get_scorecard_schools):
 		get_scorecard_schools.return_value = [
 			{
 				'id': 101,
@@ -195,16 +233,42 @@ class CollegeMatchTests(APITestCase):
 				'school.state': 'VT',
 				'school.locale': 11,
 			},
+			{
+				'id': 103,
+				'school.name': 'Massachusetts College',
+				'school.city': 'Boston',
+				'school.state': 'MA',
+				'school.locale': 11,
+			},
 		]
 
 		with self.settings(SCORECARD_API_KEY='test-key'):
 			response = self.client.post('/api/match/', {
-				'preferences': {'state': 'vt'},
+				'preferences': {'states': ['ma', 'vt']},
 			}, format='json')
 
 		self.assertEqual(response.status_code, status.HTTP_200_OK)
-		self.assertEqual([match['name'] for match in response.data['matches']], ['Vermont College'])
-		self.assertEqual(response.data['matches'][0]['state'], 'VT')
+		self.assertEqual(
+			{match['state'] for match in response.data['matches']},
+			{'MA', 'VT'},
+		)
+		self.assertEqual(len(response.data['matches']), 2)
+
+	def test_more_than_five_preferred_states_are_rejected(self):
+		response = self.client.post('/api/match/', {
+			'preferences': {'states': ['AL', 'AK', 'AZ', 'AR', 'CA', 'CO']},
+		}, format='json')
+
+		self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+		self.assertIn('no more than five', response.data['detail'])
+
+	def test_invalid_preferred_state_is_rejected(self):
+		response = self.client.post('/api/match/', {
+			'preferences': {'states': ['XX']},
+		}, format='json')
+
+		self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+		self.assertIn('valid U.S. state abbreviation', response.data['detail'])
 
 	@patch('api.views.get_scorecard_schools')
 	def test_unfiltered_matches_include_multiple_states(self, get_scorecard_schools):
@@ -309,14 +373,14 @@ class AIInsightTests(APITestCase):
 		with patch('api.views.generate_fit_insights', return_value={'101': 'A small-campus fit.'}) as generate:
 			response = self.client.post('/api/insights/', {
 				'track': 'freshman',
-				'preferences': {'state': 'NY'},
+				'preferences': {'states': ['NY', 'MA']},
 				'importance': {'cost': 5},
 				'matches': matches,
 			}, format='json')
 
 		self.assertEqual(response.status_code, status.HTTP_200_OK)
 		self.assertEqual(response.data['insights'], {'101': 'A small-campus fit.'})
-		generate.assert_called_once_with({'state': 'NY'}, 'freshman', [], matches, {'cost': 5})
+		generate.assert_called_once_with({'states': ['NY', 'MA']}, 'freshman', [], matches, {'cost': 5})
 
 	@override_settings(OPENAI_API_KEY='')
 	def test_ai_insights_report_missing_key(self):
@@ -378,7 +442,7 @@ class AIInsightTests(APITestCase):
 		}]
 		with patch('api.insights.urlopen', return_value=FakeResponse()) as urlopen:
 			insights = generate_fit_insights(
-				{'state': 'NY', 'unrelated': 'ignored'},
+				{'states': ['NY', 'MA'], 'unrelated': 'ignored'},
 				'freshman',
 				[],
 				matches,
@@ -391,6 +455,6 @@ class AIInsightTests(APITestCase):
 		self.assertEqual(insights, {'101': 'Its enrollment is within your preferred range.'})
 		self.assertEqual(request.get_header('Authorization'), 'Bearer test-key')
 		self.assertEqual(payload['model'], 'test-model')
-		self.assertEqual(user_context['preferences'], {'state': 'NY'})
+		self.assertEqual(user_context['preferences'], {'states': ['NY', 'MA']})
 		self.assertEqual(user_context['importance'], {'cost': 5})
 		self.assertEqual(user_context['matches'][0]['scorecard_details'], {'student_size': 5000})

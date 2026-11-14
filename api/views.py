@@ -104,6 +104,10 @@ def _score_college(college, preferences, weights, track, pain_points, scorecard_
         'cost': 3,
         'student_life': 3,
     }
+    setting_importance = importance.get('setting', importance.get('location', 3))
+    size_importance = importance.get('student_size', importance.get('campus', 3))
+    residential_importance = importance.get('residential_rate', importance.get('campus', 3))
+    party_importance = importance.get('party_pref', importance.get('student_life', 3))
     pref_majors = preferences.get('majors', [])
     if pref_majors and college.majors is not None:
         college_majors = _parse_majors(college.majors)
@@ -115,17 +119,17 @@ def _score_college(college, preferences, weights, track, pain_points, scorecard_
     campus_scores = []
     setting_pref = preferences.get('setting')
     if setting_pref and college.setting:
-        campus_scores.append((1.0 if college.setting == setting_pref else 0.0, importance['location']))
+        campus_scores.append((1.0 if college.setting == setting_pref else 0.0, setting_importance))
     desired_residential = preferences.get('residential_rate')
     if desired_residential is not None and college.residential_rate is not None:
         campus_scores.append((
             max(0, 1 - abs(college.residential_rate - desired_residential) / 100),
-            importance['campus'],
+            residential_importance,
         ))
     student_size_max = preferences.get('student_size_max', preferences.get('class_size_max'))
     if student_size_max is not None and college.student_size is not None:
         size_score = 1 - max(0, college.student_size - student_size_max) / max(1, student_size_max)
-        campus_scores.append((max(0.0, size_score), importance['campus']))
+        campus_scores.append((max(0.0, size_score), size_importance))
     campus_score = (
         sum(score * factor for score, factor in campus_scores) / sum(factor for _, factor in campus_scores)
         if campus_scores
@@ -165,16 +169,17 @@ def _score_college(college, preferences, weights, track, pain_points, scorecard_
 
     penalty = 0.0
     if track == 'transfer' and pain_points:
+        transfer_importance = importance.get('transfer_priorities', importance.get('academics', 3)) / 3
         if 'too_party' in pain_points and college.party_score is not None and college.party_score > 7:
-            penalty += 0.15
+            penalty += 0.15 * transfer_importance
         if 'too_big' in pain_points and college.student_size is not None and college.student_size > 150:
-            penalty += 0.15
+            penalty += 0.15 * transfer_importance
         if (
             'commuter' in pain_points
             and college.residential_rate is not None
             and college.residential_rate < 40
         ):
-            penalty += 0.1
+            penalty += 0.1 * transfer_importance
 
     match_score = max(0.0, total - penalty)
     matching_factors, mismatches = _explain_factor(college, preferences, scorecard_source)
@@ -263,7 +268,19 @@ def calculate_matches(request):
     preferences = data.get('preferences', {})
     importance = data.get('importance')
     if importance is not None:
-        importance_keys = {'academics', 'campus', 'location', 'cost', 'student_life'}
+        importance_keys = {
+            'academics',
+            'campus',
+            'location',
+            'cost',
+            'student_life',
+            'setting',
+            'student_size',
+            'party_pref',
+            'max_tuition',
+            'residential_rate',
+            'transfer_priorities',
+        }
         if not isinstance(importance, dict):
             return Response(
                 {'status': 'error', 'detail': 'importance must be an object with ratings from 1 to 5.'},
@@ -282,7 +299,6 @@ def calculate_matches(request):
                 {'status': 'error', 'detail': 'Each importance rating must be a whole number from 1 to 5.'},
                 status=status.HTTP_400_BAD_REQUEST,
             )
-        importance = {key: importance.get(key, 3) for key in importance_keys}
     weights = data.get('weights', {
         'academics': 0.3,
         'campus': 0.2,
@@ -292,22 +308,30 @@ def calculate_matches(request):
     })
     if importance is not None:
         adjusted_weights = weights.copy()
-        adjusted_weights['academics'] = weights.get('academics', 0) * importance['academics'] / 3
-        adjusted_weights['practical'] = weights.get('practical', 0) * importance['academics'] / 3
-        adjusted_weights['cost'] = weights.get('cost', 0) * importance['cost'] / 3
-        adjusted_weights['social'] = weights.get('social', 0) * importance['student_life'] / 3
+        academic_importance = importance.get('academics', 3)
+        cost_importance = importance.get('max_tuition', importance.get('cost', 3))
+        party_importance = importance.get('party_pref', importance.get('student_life', 3))
+        transfer_importance = importance.get('transfer_priorities', importance.get('academics', 3))
+        setting_importance = importance.get('setting', importance.get('location', 3))
+        size_importance = importance.get('student_size', importance.get('campus', 3))
+        residential_importance = importance.get('residential_rate', importance.get('campus', 3))
+        adjusted_weights['academics'] = weights.get('academics', 0) * academic_importance / 3
+        adjusted_weights['practical'] = weights.get('practical', 0) * transfer_importance / 3
+        adjusted_weights['cost'] = weights.get('cost', 0) * cost_importance / 3
+        adjusted_weights['social'] = weights.get('social', 0) * party_importance / 3
         setting_pref = preferences.get('setting')
-        campus_preferences = (
-            preferences.get('student_size_max', preferences.get('class_size_max')) is not None
-            or preferences.get('residential_rate') is not None
-        )
         campus_importance = []
-        if campus_preferences:
-            campus_importance.append(importance['campus'])
         if setting_pref:
-            campus_importance.append(importance['location'])
+            campus_importance.append(setting_importance)
+        if preferences.get('student_size_max', preferences.get('class_size_max')) is not None:
+            campus_importance.append(size_importance)
+        if preferences.get('residential_rate') is not None:
+            campus_importance.append(residential_importance)
         if not campus_importance:
-            campus_importance = [importance['campus'], importance['location']]
+            campus_importance = [
+                importance.get('campus', 3),
+                importance.get('location', 3),
+            ]
         adjusted_weights['campus'] = (
             weights.get('campus', 0) * sum(campus_importance) / (3 * len(campus_importance))
         )
@@ -317,6 +341,37 @@ def calculate_matches(request):
         else:
             weights = adjusted_weights
     pain_points = data.get('painPoints', [])
+
+    state_preferences = preferences.get('states')
+    if state_preferences is None:
+        legacy_state = preferences.get('state')
+        state_preferences = []
+        if legacy_state:
+            legacy_state = str(legacy_state).strip().upper()
+            if legacy_state in US_STATE_CODES:
+                state_preferences = [legacy_state]
+    else:
+        if not isinstance(state_preferences, list):
+            return Response(
+                {'status': 'error', 'detail': 'states must be a list of up to five U.S. state abbreviations.'},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        if len(state_preferences) > 5:
+            return Response(
+                {'status': 'error', 'detail': 'Choose no more than five preferred states.'},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        normalized_states = []
+        for state in state_preferences:
+            if not isinstance(state, str) or state.strip().upper() not in US_STATE_CODES:
+                return Response(
+                    {'status': 'error', 'detail': 'Each preferred state must be a valid U.S. state abbreviation.'},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+            normalized_state = state.strip().upper()
+            if normalized_state not in normalized_states:
+                normalized_states.append(normalized_state)
+        state_preferences = normalized_states
 
     scorecard_source = bool(getattr(settings, 'SCORECARD_API_KEY', ''))
     notice = None
@@ -351,22 +406,17 @@ def calculate_matches(request):
     if preferences.get('pre_med_track'):
         notice += ' Your pre-med interest is noted, but pre-med advising and preparation are not included in this match score.'
 
-    state_preference = preferences.get('state')
-    if state_preference:
-        state_preference = str(state_preference).strip().upper()
-        if state_preference not in US_STATE_CODES:
-            state_preference = None
-        else:
-            if not scorecard_source:
-                notice += ' Local records are matched by state only when their location includes a U.S. state abbreviation.'
-            colleges = [college for college in colleges if college.state == state_preference]
+    if state_preferences:
+        if not scorecard_source:
+            notice += ' Local records are matched by state only when their location includes a U.S. state abbreviation.'
+        colleges = [college for college in colleges if college.state in state_preferences]
 
     results = [
         _score_college(college, preferences, weights, track, pain_points, scorecard_source, importance)
         for college in colleges
     ]
     results.sort(key=lambda result: result['match_percentage'], reverse=True)
-    if not state_preference:
+    if len(state_preferences) != 1:
         diverse_results = []
         other_results = []
         seen_states = set()

@@ -13,6 +13,7 @@ ALLOWED_PREFERENCES = {
     'majors',
     'pre_med_track',
     'state',
+    'states',
     'setting',
     'party_pref',
     'max_tuition',
@@ -100,9 +101,9 @@ def generate_fit_insights(preferences, track, pain_points, matches, importance=N
     for key, value in preferences.items():
         if key not in ALLOWED_PREFERENCES:
             continue
-        if key == 'majors' and isinstance(value, list):
+        if key in {'majors', 'states'} and isinstance(value, list):
             safe_preferences[key] = [
-                major[:100] for major in value[:12] if isinstance(major, str)
+                item[:100] for item in value[:12] if isinstance(item, str)
             ]
         elif isinstance(value, str):
             safe_preferences[key] = value[:80]
@@ -115,7 +116,19 @@ def generate_fit_insights(preferences, track, pain_points, matches, importance=N
     safe_importance = {
         key: value
         for key, value in importance.items()
-        if key in {'academics', 'campus', 'location', 'cost', 'student_life'}
+        if key in {
+            'academics',
+            'campus',
+            'location',
+            'cost',
+            'student_life',
+            'setting',
+            'student_size',
+            'party_pref',
+            'max_tuition',
+            'residential_rate',
+            'transfer_priorities',
+        }
         and isinstance(value, int)
         and not isinstance(value, bool)
         and 1 <= value <= 5
