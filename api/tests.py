@@ -7,7 +7,13 @@ from unittest.mock import patch
 
 from .models import College
 from .insights import generate_fit_insights
-from .scorecard import CACHE_KEY, ScorecardError, get_scorecard_schools
+from .scorecard import (
+	CACHE_KEY,
+	PROGRAM_CACHE_KEY_PREFIX,
+	ScorecardError,
+	get_program_school_codes,
+	get_scorecard_schools,
+)
 
 
 @override_settings(SCORECARD_API_KEY='')
@@ -377,6 +383,72 @@ class CollegeMatchTests(APITestCase):
 		self.assertIn('pre-med interest is noted', response.data['notice'])
 		self.assertIn('not included in this match score', response.data['notice'])
 
+	def test_local_party_sample_ratings_do_not_change_scores(self):
+		low_party = College.objects.create(
+			name='Low Party Rating College',
+			location='North',
+			setting='urban',
+			party_score=1,
+		)
+		high_party = College.objects.create(
+			name='High Party Rating College',
+			location='South',
+			setting='urban',
+			party_score=10,
+		)
+		response = self.client.post('/api/match/', {
+			'preferences': {'party_pref': 'low'},
+		}, format='json')
+
+		self.assertEqual(response.status_code, status.HTTP_200_OK)
+		results = {match['id']: match for match in response.data['matches']}
+		self.assertEqual(
+			results[low_party.id]['match_percentage'],
+			results[high_party.id]['match_percentage'],
+		)
+		self.assertIn('not scored', response.data['notice'])
+		self.assertIn(
+			'Social-scene preference is not scored because reliable school-level data is unavailable',
+			results[high_party.id]['matching_factors'],
+		)
+
+	@patch('api.views.get_program_school_codes', return_value={'101': ['1107']})
+	@patch('api.views.get_scorecard_schools')
+	def test_scorecard_program_data_affects_major_match_without_false_mismatches(
+		self,
+		get_scorecard_schools,
+		get_program_school_codes,
+	):
+		get_scorecard_schools.return_value = [
+			{
+				'id': 101,
+				'school.name': 'Computer Science College',
+				'school.city': 'Los Angeles',
+				'school.state': 'CA',
+				'school.locale': 11,
+			},
+			{
+				'id': 102,
+				'school.name': 'Unverified Programs College',
+				'school.city': 'San Diego',
+				'school.state': 'CA',
+				'school.locale': 11,
+			},
+		]
+
+		with self.settings(SCORECARD_API_KEY='test-key'):
+			response = self.client.post('/api/match/', {
+				'preferences': {'states': ['CA'], 'majors': ['Computer Science']},
+			}, format='json')
+
+		self.assertEqual(response.status_code, status.HTTP_200_OK)
+		matches = {match['id']: match for match in response.data['matches']}
+		self.assertEqual(response.data['matches'][0]['id'], 101)
+		self.assertIn('Scorecard reports related programs: Computer Science', matches[101]['matching_factors'])
+		self.assertIn('does not confirm the college lacks that program', matches[102]['matching_factors'][0])
+		self.assertNotIn('Does not offer preferred majors', matches[102]['mismatches'])
+		get_program_school_codes.assert_called_once_with({'1101', '1107', '1108', '1109', '1110'})
+
 	def test_college_directory_filters_scorecard_records(self):
 		records = [{
 			'id': 101,
@@ -416,6 +488,33 @@ class ScorecardFetchingTests(APITestCase):
 		request_count = mock_request.call_count
 		self.assertEqual(get_scorecard_schools(), schools)
 		self.assertEqual(mock_request.call_count, request_count)
+
+	def test_fetches_and_caches_selected_program_school_codes(self):
+		cache_key = f'{PROGRAM_CACHE_KEY_PREFIX}_1107_5203'
+		cache.delete(cache_key)
+		with patch('api.scorecard._request_program_page', return_value=(
+			[
+				{
+					'id': 101,
+					'latest.programs.cip_4_digit': [
+						{'code': '1107', 'title': 'Computer Science.'},
+						{'code': '5203', 'title': 'Accounting.'},
+					],
+				},
+				{
+					'id': 102,
+					'latest.programs.cip_4_digit': [
+						{'code': '1101', 'title': 'Computer and Information Sciences.'},
+					],
+				},
+			],
+			{'total': 2},
+		)) as request_page:
+			programs = get_program_school_codes({'5203', '1107'})
+			self.assertEqual(get_program_school_codes({'1107', '5203'}), programs)
+
+		self.assertEqual(programs, {'101': ['1107', '5203']})
+		request_page.assert_called_once_with('test-key', 0, ['1107', '5203'])
 
 
 class AIInsightTests(APITestCase):

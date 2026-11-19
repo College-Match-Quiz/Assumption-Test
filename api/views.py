@@ -8,8 +8,14 @@ from rest_framework import status
 from rest_framework.throttling import ScopedRateThrottle
 
 from .insights import AIInsightError, generate_fit_insights
+from .majors import codes_for_majors
 from .models import College
-from .scorecard import ScorecardError, get_scorecard_schools, normalize_school
+from .scorecard import (
+    ScorecardError,
+    get_program_school_codes,
+    get_scorecard_schools,
+    normalize_school,
+)
 
 
 US_STATE_CODES = {
@@ -39,6 +45,8 @@ class MatchCollege:
     majors: str | None
     residential_rate: int | None
     scorecard_details: dict | None = None
+    scorecard_program_data_available: bool = False
+    matched_majors: list[str] | None = None
 
 
 def _parse_majors(text):
@@ -57,8 +65,13 @@ def _explain_factor(college, preferences, scorecard_source):
 
     majors_pref = preferences.get('majors', [])
     if majors_pref:
-        if college.majors is None and scorecard_source:
-            matches.append('Major offerings are not included in Scorecard institution data')
+        if scorecard_source and college.scorecard_program_data_available:
+            if college.matched_majors:
+                matches.append(f"Scorecard reports related programs: {', '.join(college.matched_majors)}")
+            else:
+                matches.append('A matching program was not found in the available Scorecard data; this does not confirm the college lacks that program')
+        elif college.majors is None and scorecard_source:
+            matches.append('Program data is unavailable for these selected majors')
         else:
             college_majors = _parse_majors(college.majors or '')
             intersect = [major for major in majors_pref if major.lower() in college_majors]
@@ -68,15 +81,8 @@ def _explain_factor(college, preferences, scorecard_source):
                 mismatches.append('Does not offer preferred majors')
 
     party_pref = preferences.get('party_pref')
-    if party_pref and college.party_score is None and scorecard_source:
-        matches.append('Social scene is not reported in Scorecard institution data')
-    elif party_pref and college.party_score is not None:
-        if party_pref == 'low' and college.party_score > 7:
-            mismatches.append('High party culture')
-        elif party_pref == 'high' and college.party_score < 4:
-            mismatches.append('Low party culture')
-        else:
-            matches.append('Vibe aligns with party preference')
+    if party_pref:
+        matches.append('Social-scene preference is not scored because reliable school-level data is unavailable')
 
     max_tuition = preferences.get('max_tuition')
     if max_tuition is not None and college.net_price_estimate is not None:
@@ -102,7 +108,15 @@ def _explain_factor(college, preferences, scorecard_source):
     return matches, mismatches
 
 
-def _score_college(college, preferences, weights, track, pain_points, scorecard_source, importance=None):
+def _score_college(
+    college,
+    preferences,
+    weights,
+    track,
+    pain_points,
+    scorecard_source,
+    importance=None,
+):
     importance = importance or {
         'academics': 3,
         'campus': 3,
@@ -115,7 +129,18 @@ def _score_college(college, preferences, weights, track, pain_points, scorecard_
     residential_importance = importance.get('residential_rate', importance.get('campus', 3))
     party_importance = importance.get('party_pref', importance.get('student_life', 3))
     pref_majors = preferences.get('majors', [])
-    if pref_majors and college.majors is not None:
+    if pref_majors and scorecard_source:
+        major_codes = codes_for_majors(pref_majors)
+        mapped_majors = [major for major, codes in major_codes.items() if codes]
+        if college.scorecard_program_data_available and mapped_majors:
+            matched_count = sum(
+                1 for major in mapped_majors
+                if major in (college.matched_majors or [])
+            )
+            academics_score = matched_count / len(mapped_majors)
+        else:
+            academics_score = None
+    elif pref_majors and college.majors is not None:
         college_majors = _parse_majors(college.majors)
         matched = sum(1 for major in pref_majors if major.lower() in college_majors)
         academics_score = min(1.0, matched / max(1, len(pref_majors)))
@@ -157,31 +182,34 @@ def _score_college(college, preferences, weights, track, pain_points, scorecard_
                 1 - (college.net_price_estimate - max_tuition) / max(1, max_tuition),
             )
 
-    social_score = 0.5
-    party_pref = preferences.get('party_pref')
-    if party_pref and college.party_score is not None:
-        if party_pref == 'low':
-            social_score = max(0.0, 1 - college.party_score / 10)
-        elif party_pref == 'high':
-            social_score = min(1.0, college.party_score / 10)
+    social_score = None
 
     practical_score = 0.5
     if track == 'transfer' and college.transfer_friendly is not None:
         practical_score = 1.0 if college.transfer_friendly else 0.0
 
+    score_factors = (
+        (academics_score, weights.get('academics', 0)),
+        (campus_score, weights.get('campus', 0)),
+        (cost_score, weights.get('cost', 0)),
+        (social_score, weights.get('social', 0)),
+        (practical_score, weights.get('practical', 0)),
+    )
+    available_factors = [
+        (score, weight)
+        for score, weight in score_factors
+        if score is not None and weight > 0
+    ]
+    total_weight = sum(weight for _, weight in available_factors)
     total = (
-        academics_score * weights.get('academics', 0)
-        + campus_score * weights.get('campus', 0)
-        + cost_score * weights.get('cost', 0)
-        + social_score * weights.get('social', 0)
-        + practical_score * weights.get('practical', 0)
+        sum(score * weight for score, weight in available_factors) / total_weight
+        if total_weight
+        else 0.5
     )
 
     penalty = 0.0
     if track == 'transfer' and pain_points:
         transfer_importance = importance.get('transfer_priorities', importance.get('academics', 3)) / 3
-        if 'too_party' in pain_points and college.party_score is not None and college.party_score > 7:
-            penalty += 0.15 * transfer_importance
         if 'too_big' in pain_points and college.student_size is not None and college.student_size > 150:
             penalty += 0.15 * transfer_importance
         if (
@@ -238,12 +266,18 @@ def _local_colleges():
     ]
 
 
-def _scorecard_colleges(records):
+def _scorecard_colleges(records, program_codes_by_school=None, major_codes=None):
     colleges = []
     for record in records:
         school = normalize_school(record)
         if school is None:
             continue
+        school_codes = set((program_codes_by_school or {}).get(str(school['id']), []))
+        matched_majors = [
+            major
+            for major, codes in (major_codes or {}).items()
+            if codes.intersection(school_codes)
+        ]
         colleges.append(MatchCollege(
             id=school['id'],
             name=school['name'],
@@ -267,6 +301,8 @@ def _scorecard_colleges(records):
                 )
                 if school[key] is not None
             },
+            scorecard_program_data_available=program_codes_by_school is not None,
+            matched_majors=matched_majors,
         ))
     return colleges
 
@@ -386,11 +422,22 @@ def calculate_matches(request):
                 normalized_states.append(normalized_state)
         state_preferences = normalized_states
 
+    major_codes = codes_for_majors(preferences.get('majors', []))
+    requested_program_codes = set().union(*major_codes.values()) if major_codes else set()
     scorecard_source = bool(getattr(settings, 'SCORECARD_API_KEY', ''))
     notice = None
     if scorecard_source:
         try:
-            colleges = _scorecard_colleges(get_scorecard_schools())
+            program_codes_by_school = (
+                get_program_school_codes(requested_program_codes)
+                if requested_program_codes
+                else None
+            )
+            colleges = _scorecard_colleges(
+                get_scorecard_schools(),
+                program_codes_by_school,
+                major_codes,
+            )
         except ScorecardError as error:
             return Response(
                 {'status': 'error', 'detail': str(error)},
@@ -403,10 +450,11 @@ def calculate_matches(request):
             )
         source = 'college_scorecard'
         notice = (
-            'Data source: U.S. Department of Education College Scorecard. Program offerings, '
-            'social scene, housing, and transfer acceptance are not in the institution data '
-            'used here, so those preferences are not scored. Verify current costs and details '
-            'with each college.'
+            'Data source: U.S. Department of Education College Scorecard. Program matches use '
+            'reported field-of-study records; a program not found in those records is not proof '
+            'that a school does not offer it. Social-scene preference, housing, and transfer '
+            'acceptance are not scored from this data. Verify program availability and current '
+            'costs with each college.'
         )
     else:
         colleges = _local_colleges()
@@ -418,6 +466,17 @@ def calculate_matches(request):
 
     if preferences.get('pre_med_track'):
         notice += ' Your pre-med interest is noted, but pre-med advising and preparation are not included in this match score.'
+    if preferences.get('party_pref') or 'too_party' in pain_points:
+        notice += ' Social-scene preferences are recorded but are not scored because reliable school-level ratings are unavailable.'
+    if scorecard_source and preferences.get('majors'):
+        unmapped_majors = [major for major, codes in major_codes.items() if not codes]
+        if unmapped_majors:
+            notice += (
+                ' Program codes are not mapped for: '
+                f'{", ".join(unmapped_majors)}. These choices are not scored from Scorecard data.'
+            )
+        if not requested_program_codes:
+            notice += ' No selected major has a Scorecard program-code mapping, so academic fit is not scored.'
 
     if state_preferences:
         if not scorecard_source:

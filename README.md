@@ -13,7 +13,7 @@ notepad .env
 py manage.py runserver
 ```
 
-The API response is cached in memory for 12 hours. Scorecard institution data includes enrollment, campus location, tuition/net price, and admissions data. The quiz scores on enrollment, location, and net price; program offerings, campus social life, housing, and transfer acceptance are not included in this API result and are not scored from Scorecard. Cost and enrollment are reported figures and should be confirmed with each institution.
+The API response is cached in memory for 12 hours. Scorecard institution data includes enrollment, campus location, tuition/net price, and admissions data. When students select mapped majors, the quiz also queries Scorecard's reported four-digit field-of-study programs and caches those results for 12 hours. A reported program match is evidence of related awards, not a guarantee of current availability; a program not found in the records is not treated as proof that the school does not offer it. Campus social life, housing, and transfer acceptance are not reliably scored from Scorecard. Cost and enrollment are reported figures and should be confirmed with each institution.
 
 The quiz also lets students optionally choose one of the 50 U.S. states. That preference limits matches to the selected state; when no state is selected, the shortlist is spread across states when the data allows.
 

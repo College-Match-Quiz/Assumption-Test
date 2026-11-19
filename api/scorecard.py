@@ -13,6 +13,7 @@ from django.core.cache import cache
 API_URL = 'https://api.data.gov/ed/collegescorecard/v1/schools'
 CACHE_KEY = 'college_scorecard_schools_v1'
 CACHE_TTL_SECONDS = 12 * 60 * 60
+PROGRAM_CACHE_KEY_PREFIX = 'college_scorecard_programs_v1'
 PAGE_SIZE = 100
 MAX_PAGES = 100
 MAX_CONCURRENT_REQUESTS = 8
@@ -30,6 +31,11 @@ FIELDS = ','.join((
     'latest.cost.avg_net_price.public',
     'latest.cost.avg_net_price.private',
     'latest.admissions.admission_rate.overall',
+))
+PROGRAM_FIELDS = ','.join((
+    'id',
+    'latest.programs.cip_4_digit.code',
+    'latest.programs.cip_4_digit.title',
 ))
 
 
@@ -93,6 +99,91 @@ def get_scorecard_schools():
 
     cache.set(CACHE_KEY, schools, CACHE_TTL_SECONDS)
     return schools
+
+
+def _request_program_page(api_key, page, cip_codes):
+    query = urlencode({
+        'api_key': api_key,
+        'school.operating': 1,
+        'latest.programs.cip_4_digit.code': ','.join(cip_codes),
+        'fields': PROGRAM_FIELDS,
+        'per_page': PAGE_SIZE,
+        'page': page,
+    })
+    request = Request(f'{API_URL}?{query}', headers={'User-Agent': 'Unify/1.0'})
+    try:
+        with urlopen(request, timeout=15) as response:
+            data = json.loads(response.read().decode('utf-8'))
+    except HTTPError as error:
+        raise ScorecardError(
+            f'College Scorecard program data returned HTTP {error.code}. Check the API key and try again.'
+        ) from error
+    except (URLError, TimeoutError) as error:
+        raise ScorecardError('College Scorecard program data could not be reached. Try again later.') from error
+    except (json.JSONDecodeError, UnicodeDecodeError) as error:
+        raise ScorecardError('College Scorecard returned unreadable program data.') from error
+
+    if not isinstance(data, dict) or not isinstance(data.get('results'), list):
+        raise ScorecardError('College Scorecard returned an unexpected program-data response.')
+    return data['results'], data.get('metadata', {})
+
+
+def get_program_school_codes(cip_codes):
+    api_key = getattr(settings, 'SCORECARD_API_KEY', '')
+    if not api_key or not cip_codes:
+        return None
+
+    normalized_codes = sorted({
+        str(code).strip()
+        for code in cip_codes
+        if isinstance(code, str) and len(code.strip()) == 4 and code.strip().isdigit()
+    })
+    if not normalized_codes:
+        return None
+
+    cache_key = f'{PROGRAM_CACHE_KEY_PREFIX}_{"_".join(normalized_codes)}'
+    cached = cache.get(cache_key)
+    if cached is not None:
+        return cached
+
+    schools, metadata = _request_program_page(api_key, 0, normalized_codes)
+    total = metadata.get('total')
+    if isinstance(total, int):
+        page_count = ceil(total / PAGE_SIZE)
+        if page_count > MAX_PAGES:
+            raise ScorecardError('College Scorecard returned more program-data pages than the service allows.')
+        with ThreadPoolExecutor(max_workers=MAX_CONCURRENT_REQUESTS) as executor:
+            for records, _ in executor.map(
+                partial(_request_program_page, api_key, cip_codes=normalized_codes),
+                range(1, page_count),
+            ):
+                schools.extend(records)
+    else:
+        for page in range(1, MAX_PAGES):
+            records, metadata = _request_program_page(api_key, page, normalized_codes)
+            schools.extend(records)
+            total = metadata.get('total')
+            if not records or (isinstance(total, int) and len(schools) >= total):
+                break
+        else:
+            raise ScorecardError('College Scorecard returned more program-data pages than the service allows.')
+
+    school_codes = {}
+    for school in schools:
+        school_id = school.get('id')
+        programs = school.get('latest.programs.cip_4_digit', [])
+        if school_id is None or not isinstance(programs, list):
+            continue
+        codes = {
+            program.get('code')
+            for program in programs
+            if isinstance(program, dict) and program.get('code') in normalized_codes
+        }
+        if codes:
+            school_codes[str(school_id)] = sorted(codes)
+
+    cache.set(cache_key, school_codes, CACHE_TTL_SECONDS)
+    return school_codes
 
 
 def _number(value):
