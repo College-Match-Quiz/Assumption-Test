@@ -85,13 +85,19 @@ def _explain_factor(college, preferences, scorecard_source):
         else:
             mismatches.append('Estimated net price may exceed budget')
 
+    student_size_min = preferences.get('student_size_min')
     student_size_max = preferences.get('student_size_max', preferences.get('class_size_max'))
-    if student_size_max is not None and college.student_size is not None:
+    if student_size_min is not None and college.student_size is not None:
+        if college.student_size >= student_size_min:
+            matches.append('Student population is at least your preferred size')
+        else:
+            mismatches.append('Student population is below your preferred size')
+    elif student_size_max is not None and college.student_size is not None:
         if college.student_size <= student_size_max:
             matches.append('Student population is within your preferred size')
         else:
             mismatches.append('Student population is above your preferred size')
-    elif student_size_max is not None and scorecard_source:
+    elif (student_size_min is not None or student_size_max is not None) and scorecard_source:
         matches.append('Student population is not reported for this institution')
     return matches, mismatches
 
@@ -126,8 +132,12 @@ def _score_college(college, preferences, weights, track, pain_points, scorecard_
             max(0, 1 - abs(college.residential_rate - desired_residential) / 100),
             residential_importance,
         ))
+    student_size_min = preferences.get('student_size_min')
     student_size_max = preferences.get('student_size_max', preferences.get('class_size_max'))
-    if student_size_max is not None and college.student_size is not None:
+    if student_size_min is not None and college.student_size is not None:
+        size_score = 1 - max(0, student_size_min - college.student_size) / max(1, student_size_min)
+        campus_scores.append((max(0.0, size_score), size_importance))
+    elif student_size_max is not None and college.student_size is not None:
         size_score = 1 - max(0, college.student_size - student_size_max) / max(1, student_size_max)
         campus_scores.append((max(0.0, size_score), size_importance))
     campus_score = (
@@ -323,7 +333,10 @@ def calculate_matches(request):
         campus_importance = []
         if setting_pref:
             campus_importance.append(setting_importance)
-        if preferences.get('student_size_max', preferences.get('class_size_max')) is not None:
+        if (
+            preferences.get('student_size_min') is not None
+            or preferences.get('student_size_max', preferences.get('class_size_max')) is not None
+        ):
             campus_importance.append(size_importance)
         if preferences.get('residential_rate') is not None:
             campus_importance.append(residential_importance)
@@ -409,7 +422,14 @@ def calculate_matches(request):
     if state_preferences:
         if not scorecard_source:
             notice += ' Local records are matched by state only when their location includes a U.S. state abbreviation.'
-        colleges = [college for college in colleges if college.state in state_preferences]
+        state_matches = [college for college in colleges if college.state in state_preferences]
+        if state_matches:
+            colleges = state_matches
+        else:
+            notice += (
+                ' No colleges in the available data were found in your selected states, '
+                'so these recommendations are the best-scoring options nationwide.'
+            )
 
     results = [
         _score_college(college, preferences, weights, track, pain_points, scorecard_source, importance)

@@ -53,6 +53,34 @@ class CollegeMatchTests(APITestCase):
 		large_match = next(match for match in matches if match['id'] == self.large_class.id)
 		self.assertIn('Student population is above your preferred size', large_match['mismatches'])
 
+	def test_minimum_campus_size_preference_matches_large_enrollment(self):
+		large_campus = College.objects.create(
+			name='Large Campus College',
+			location='West',
+			setting='urban',
+			class_size_avg=35000,
+			party_score=5,
+			net_price_estimate=20000,
+		)
+		response = self.client.post('/api/match/', {
+			'track': 'freshman',
+			'preferences': {'student_size_min': 30000},
+			'importance': {'student_size': 5},
+		}, format='json')
+
+		self.assertEqual(response.status_code, status.HTTP_200_OK)
+		large_match = next(
+			match for match in response.data['matches']
+			if match['id'] == large_campus.id
+		)
+		small_match = next(
+			match for match in response.data['matches']
+			if match['id'] == self.small_class.id
+		)
+		self.assertIn('Student population is at least your preferred size', large_match['matching_factors'])
+		self.assertIn('Student population is below your preferred size', small_match['mismatches'])
+		self.assertGreater(large_match['match_percentage'], small_match['match_percentage'])
+
 	def test_importance_ratings_change_match_ranking(self):
 		expensive_small = College.objects.create(
 			name='Expensive Small College',
@@ -253,6 +281,37 @@ class CollegeMatchTests(APITestCase):
 			{'MA', 'VT'},
 		)
 		self.assertEqual(len(response.data['matches']), 2)
+
+	@patch('api.views.get_scorecard_schools')
+	def test_no_matches_in_preferred_states_falls_back_to_nationwide(self, get_scorecard_schools):
+		get_scorecard_schools.return_value = [
+			{
+				'id': 101,
+				'school.name': 'California College',
+				'school.city': 'Los Angeles',
+				'school.state': 'CA',
+				'school.locale': 11,
+			},
+			{
+				'id': 102,
+				'school.name': 'Oregon College',
+				'school.city': 'Portland',
+				'school.state': 'OR',
+				'school.locale': 11,
+			},
+		]
+
+		with self.settings(SCORECARD_API_KEY='test-key'):
+			response = self.client.post('/api/match/', {
+				'preferences': {'states': ['NY', 'MA']},
+			}, format='json')
+
+		self.assertEqual(response.status_code, status.HTTP_200_OK)
+		self.assertEqual(
+			{match['state'] for match in response.data['matches']},
+			{'CA', 'OR'},
+		)
+		self.assertIn('best-scoring options nationwide', response.data['notice'])
 
 	def test_more_than_five_preferred_states_are_rejected(self):
 		response = self.client.post('/api/match/', {

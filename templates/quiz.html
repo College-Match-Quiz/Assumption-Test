@@ -173,12 +173,13 @@
 
         <fieldset class="quiz-step" data-topic="Learning environment" hidden>
             <legend>What student population feels right?</legend>
-            <p class="quiz-step-hint">Choose a maximum total enrollment, or leave it open. Smaller campuses can feel more close-knit.</p>
+            <p class="quiz-step-hint">Choose an enrollment range that feels right, or leave it open.</p>
             <div class="choice-grid choice-grid-3">
                 <label class="choice-card"><input type="radio" name="student_size_max" value="any" checked><strong>No preference</strong><span>Do not filter by enrollment.</span></label>
                 <label class="choice-card"><input type="radio" name="student_size_max" value="5000"><strong>5,000 or fewer</strong><span>A small-campus feel.</span></label>
                 <label class="choice-card"><input type="radio" name="student_size_max" value="15000"><strong>15,000 or fewer</strong><span>A medium-sized community.</span></label>
                 <label class="choice-card"><input type="radio" name="student_size_max" value="30000"><strong>30,000 or fewer</strong><span>Keep larger schools in the mix.</span></label>
+                <label class="choice-card"><input type="radio" name="student_size_max" value="30000+"><strong>30,000 or more</strong><span>A large-campus community.</span></label>
             </div>
             <div class="importance-item question-importance">
                 <label for="importance-student-size">How important is campus size to you?</label>
@@ -412,7 +413,8 @@ function collectForm() {
             setting: setting === 'any' ? null : setting,
             party_pref: partyPreference === 'any' ? null : partyPreference,
             max_tuition: maxTuition === 'any' ? null : Number(maxTuition),
-            student_size_max: studentSize === 'any' ? null : Number(studentSize),
+            student_size_max: studentSize === 'any' || studentSize.endsWith('+') ? null : Number(studentSize),
+            student_size_min: studentSize.endsWith('+') ? Number(studentSize.slice(0, -1)) : null,
             residential_rate: residentialRate === 'any' ? null : Number(residentialRate)
         },
         painPoints,
@@ -442,7 +444,7 @@ function renderMatches(matches) {
     if (!matches.length) {
         const empty = document.createElement('p');
         empty.className = 'quiz-result';
-        empty.textContent = 'No colleges in our current data match your selected states and preferences. Try removing a state or adjusting your answers.';
+        empty.textContent = 'No college records are available right now. Please try again later.';
         list.appendChild(empty);
         return;
     }
