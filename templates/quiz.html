@@ -4,20 +4,55 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Find Your Match | Assumption-Test</title>
+    <title>Find Your Match | Unify</title>
+    <link rel="icon" type="image/svg+xml" href="{% static 'images/unify-mark.svg' %}">
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="{% static 'css/site.css' %}">
-    <style>body { font-family: 'Inter', sans-serif; } .font-display { font-family: 'Fraunces', serif; }</style>
+    <link rel="stylesheet" href="{% static 'css/site.css' %}?v=20261114-state-picker">
+    <script src="{% static 'js/site.js' %}" defer></script>
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        .font-display { font-family: 'Fraunces', serif; }
+
+        /* State picker */
+        .state-picker { display: flex; flex-direction: column; gap: 14px; margin-top: 8px; }
+        .state-picker .sp-top { display: flex; align-items: center; justify-content: space-between; gap: 12px; min-height: 44px; padding: 8px 12px; border: 1px solid rgba(255, 255, 255, .16); border-radius: 12px; background: #0e151d; }
+        .sp-chips { display: flex; flex-wrap: wrap; gap: 6px; flex: 1; }
+        .sp-empty { font-size: 13px; color: #aeb9c4; }
+        .sp-chip { display: inline-flex; align-items: center; gap: 6px; padding: 4px 6px 4px 10px; border-radius: 999px; background: #2D3648; color: #fff; font-size: 13px; font-weight: 600; }
+        .sp-chip button { display: grid; place-items: center; width: 18px; height: 18px; border: 0; border-radius: 50%; background: rgba(255,255,255,.2); color: #fff; font-size: 12px; line-height: 1; cursor: pointer; }
+        .sp-chip button:hover { background: rgba(255,255,255,.35); }
+        #state-selection-count { flex-shrink: 0; font-size: 12px; font-weight: 600; color: #b4d9c3; white-space: nowrap; }
+
+        .sp-search { position: relative; }
+        .sp-search svg { position: absolute; left: 14px; top: 50%; width: 16px; height: 16px; transform: translateY(-50%); color: #94a3b8; pointer-events: none; }
+        .sp-search input#state-search { width: 100%; padding: 11px 14px 11px 40px; border: 1px solid rgba(255, 255, 255, .16); border-radius: 10px; font-size: 14px; background: #19232f; color: #eff3ee; }
+        .sp-search input#state-search::placeholder { color: #aeb9c4; }
+        .sp-search input#state-search:focus { outline: 2px solid #70b7a1; outline-offset: 1px; border-color: transparent; }
+
+        #state-option-list.state-option-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 8px; max-height: 320px; overflow-y: auto; padding: 2px; }
+        #state-option-list .state-option { position: relative; display: flex; align-items: center; gap: 10px; padding: 10px 12px; border: 1px solid rgba(255, 255, 255, .12); border-radius: 10px; background: #19232f; font-size: 14px; color: #d6e0e5; cursor: pointer; transition: border-color .15s, background .15s, box-shadow .15s; }
+        #state-option-list .state-option[hidden] { display: none; }
+        #state-option-list .state-option:hover { border-color: #70b7a1; background: #1d2c37; }
+        #state-option-list .state-option input { position: absolute; opacity: 0; inset: 0; margin: 0; cursor: pointer; }
+        .sp-code { display: grid; place-items: center; width: 30px; height: 24px; border-radius: 6px; background: #263440; font-size: 11px; font-weight: 700; letter-spacing: .04em; color: #c4d2d7; }
+        #state-option-list .state-option:has(input:checked) { border-color: #70b7a1; background: linear-gradient(145deg, rgba(53, 117, 101, .32), rgba(32, 63, 59, .3)); box-shadow: inset 0 0 0 1px rgba(112, 183, 161, .35); font-weight: 600; color: #eff3ee; }
+        #state-option-list .state-option:has(input:checked) .sp-code { background: #2D3648; color: #fff; }
+        #state-option-list .state-option:has(input:focus-visible) { outline: 2px solid #506963; outline-offset: 2px; }
+        #state-option-list .state-option:has(input:disabled) { opacity: .45; cursor: not-allowed; }
+        #state-option-list .state-option input:disabled { cursor: not-allowed; }
+        .sp-none { grid-column: 1 / -1; padding: 16px; text-align: center; font-size: 14px; color: #64748b; }
+        .state-selection-message { font-size: 13px; color: #64748b; margin: 0; }
+    </style>
 </head>
-<body class="min-h-screen bg-[#F1F3F4] text-slate-800 antialiased">
+<body class="quiz-page min-h-screen text-slate-800 antialiased">
 <header class="sticky top-0 z-10 border-b border-slate-200/80 bg-[#F1F3F4]/95 backdrop-blur-sm">
     <div class="mx-auto max-w-6xl px-4 py-4 sm:px-6">
         <div class="relative flex flex-wrap items-center justify-between gap-y-3">
             <a href="/" class="font-display flex items-center gap-2.5 text-xl font-bold text-slate-900">
-                <span class="flex h-8 w-8 items-center justify-center rounded-full bg-[#82938F] text-sm text-[#2D3648]">A</span>
-                Assumption-Test
+                <img src="{% static 'images/unify-mark.svg' %}" alt="" aria-hidden="true" class="h-8 w-8">
+                Unify<sup class="ml-0.5 text-[10px]">™</sup>
             </a>
             <nav aria-label="Main navigation" class="order-3 flex w-full flex-wrap items-center gap-x-4 gap-y-2 text-xs font-medium text-slate-600 lg:absolute lg:left-1/2 lg:top-1/2 lg:order-none lg:w-auto lg:-translate-x-1/2 lg:-translate-y-1/2 lg:flex-nowrap lg:gap-6 lg:text-sm">
                 <a href="/" class="transition hover:text-slate-900">Home</a>
@@ -39,7 +74,7 @@
 
     <form id="quiz-form" class="quiz-form rounded-xl border border-slate-200 bg-white shadow-sm">
         <div class="quiz-progress" aria-live="polite">
-            <div class="quiz-progress-copy"><strong id="step-label">Question 1 of 7</strong><span id="step-topic">Your path</span></div>
+            <div class="quiz-progress-copy"><strong id="step-label">Question 1 of 8</strong><span id="step-topic">Your path</span></div>
             <div class="quiz-progress-track" role="progressbar" aria-label="Quiz progress" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><span class="quiz-progress-fill"></span></div>
         </div>
 
@@ -52,21 +87,71 @@
             </div>
         </fieldset>
 
+        <fieldset class="quiz-step" data-topic="Preferred state" hidden>
+            <legend>Which states are in your top five?</legend>
+            <p class="quiz-step-hint">Choose up to five states to focus your college matches. Leave them all blank to search nationwide.</p>
+            <div class="state-picker">
+                <div class="sp-top">
+                    <div id="state-chips" class="sp-chips" aria-live="polite"></div>
+                    <span id="state-selection-count" aria-live="polite">0 of 5 selected</span>
+                </div>
+                <div class="sp-search">
+                    <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="9" cy="9" r="6"/><path d="m14 14 4 4"/></svg>
+                    <label class="sr-only" for="state-search">Find a state</label>
+                    <input id="state-search" type="search" placeholder="Search states" autocomplete="off">
+                </div>
+                <div id="state-option-list" class="state-option-list" role="group" aria-label="Choose up to five preferred states"></div>
+                <p id="state-selection-message" class="state-selection-message" role="status" aria-live="polite">Choose up to five, or leave blank for any state.</p>
+            </div>
+        </fieldset>
+
         <fieldset class="quiz-step" data-topic="What you want to study" hidden>
             <legend>What would you like to study?</legend>
             <p class="quiz-step-hint">Choose any areas that interest you. Your picks are compared with each school's listed programs.</p>
             <div class="major-grid">
                 <label class="choice-card major-choice"><input type="checkbox" name="majorChoice" value="Computer Science"><strong>Computer science</strong></label>
                 <label class="choice-card major-choice"><input type="checkbox" name="majorChoice" value="Business"><strong>Business</strong></label>
-                <label class="choice-card major-choice"><input type="checkbox" name="majorChoice" value="Biology"><strong>Biology</strong></label>
+                <label class="choice-card major-choice"><input type="checkbox" name="majorChoice" value="Biology" data-pre-med-relevant><strong>Biology</strong></label>
                 <label class="choice-card major-choice"><input type="checkbox" name="majorChoice" value="Engineering"><strong>Engineering</strong></label>
-                <label class="choice-card major-choice"><input type="checkbox" name="majorChoice" value="Psychology"><strong>Psychology</strong></label>
-                <label class="choice-card major-choice"><input type="checkbox" name="majorChoice" value="Nursing"><strong>Nursing</strong></label>
+                <label class="choice-card major-choice"><input type="checkbox" name="majorChoice" value="Psychology" data-pre-med-relevant><strong>Psychology</strong></label>
+                <label class="choice-card major-choice"><input type="checkbox" name="majorChoice" value="Nursing" data-pre-med-relevant><strong>Nursing</strong></label>
                 <label class="choice-card major-choice"><input type="checkbox" name="majorChoice" value="Education"><strong>Education</strong></label>
                 <label class="choice-card major-choice"><input type="checkbox" name="majorChoice" value="Arts"><strong>Arts &amp; design</strong></label>
+                <label class="choice-card major-choice"><input type="checkbox" name="majorChoice" value="Accounting"><strong>Accounting</strong></label>
+                <label class="choice-card major-choice"><input type="checkbox" name="majorChoice" value="Anthropology"><strong>Anthropology</strong></label>
+                <label class="choice-card major-choice"><input type="checkbox" name="majorChoice" value="Architecture"><strong>Architecture</strong></label>
+                <label class="choice-card major-choice"><input type="checkbox" name="majorChoice" value="Chemistry" data-pre-med-relevant><strong>Chemistry</strong></label>
+                <label class="choice-card major-choice"><input type="checkbox" name="majorChoice" value="Communications"><strong>Communications</strong></label>
+                <label class="choice-card major-choice"><input type="checkbox" name="majorChoice" value="Criminal Justice"><strong>Criminal justice</strong></label>
+                <label class="choice-card major-choice"><input type="checkbox" name="majorChoice" value="Economics"><strong>Economics</strong></label>
+                <label class="choice-card major-choice"><input type="checkbox" name="majorChoice" value="English"><strong>English</strong></label>
+                <label class="choice-card major-choice"><input type="checkbox" name="majorChoice" value="Environmental Science"><strong>Environmental science</strong></label>
+                <label class="choice-card major-choice"><input type="checkbox" name="majorChoice" value="Finance"><strong>Finance</strong></label>
+                <label class="choice-card major-choice"><input type="checkbox" name="majorChoice" value="History"><strong>History</strong></label>
+                <label class="choice-card major-choice"><input type="checkbox" name="majorChoice" value="Mathematics"><strong>Mathematics</strong></label>
+                <label class="choice-card major-choice"><input type="checkbox" name="majorChoice" value="Marketing"><strong>Marketing</strong></label>
+                <label class="choice-card major-choice"><input type="checkbox" name="majorChoice" value="Philosophy"><strong>Philosophy</strong></label>
+                <label class="choice-card major-choice"><input type="checkbox" name="majorChoice" value="Physics" data-pre-med-relevant><strong>Physics</strong></label>
+                <label class="choice-card major-choice"><input type="checkbox" name="majorChoice" value="Political Science"><strong>Political science</strong></label>
+                <label class="choice-card major-choice"><input type="checkbox" name="majorChoice" value="Public Health" data-pre-med-relevant><strong>Public health</strong></label>
+                <label class="choice-card major-choice"><input type="checkbox" name="majorChoice" value="Social Work"><strong>Social work</strong></label>
+                <label class="choice-card major-choice"><input type="checkbox" name="majorChoice" value="Sociology"><strong>Sociology</strong></label>
                 <label class="choice-card major-choice"><input type="checkbox" name="majorChoice" value="Undecided"><strong>Still exploring</strong></label>
             </div>
+            <div id="pre-med-option" class="mt-4" hidden>
+                <label class="choice-card">
+                    <input id="pre-med-track" type="checkbox" name="preMedTrack">
+                    <strong>I’m planning on a pre-med track</strong>
+                </label>
+                <p class="quiz-step-hint mb-0 mt-2">This is noted as an interest, but pre-med advising and preparation aren’t included in the match score.</p>
+            </div>
             <div class="major-other"><label for="major-other">Or add another area</label><input id="major-other" type="text" placeholder="Separate multiple interests with commas" autocomplete="off"></div>
+            <div class="importance-item question-importance">
+                <label for="importance-academics">How important is your choice of study area?</label>
+                <input id="importance-academics" class="importance-slider" type="range" name="importance_academics" min="1" max="5" step="1" value="3">
+                <div class="importance-ticks" aria-hidden="true"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span></div>
+                <div class="importance-scale"><span>Not important</span><output for="importance-academics">3/5</output><span>Extremely important</span></div>
+            </div>
         </fieldset>
 
         <fieldset class="quiz-step" data-topic="Campus setting" hidden>
@@ -78,16 +163,29 @@
                 <label class="choice-card"><input type="radio" name="setting" value="suburban"><strong>Suburban</strong><span>A quieter area near a city.</span></label>
                 <label class="choice-card"><input type="radio" name="setting" value="rural"><strong>Rural</strong><span>More open space and a small-town feel.</span></label>
             </div>
+            <div class="importance-item question-importance">
+                <label for="importance-setting">How important is campus location to you?</label>
+                <input id="importance-setting" class="importance-slider" type="range" name="importance_setting" min="1" max="5" step="1" value="3">
+                <div class="importance-ticks" aria-hidden="true"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span></div>
+                <div class="importance-scale"><span>Not important</span><output for="importance-setting">3/5</output><span>Extremely important</span></div>
+            </div>
         </fieldset>
 
         <fieldset class="quiz-step" data-topic="Learning environment" hidden>
-            <legend>What class size feels right?</legend>
-            <p class="quiz-step-hint">Smaller classes can mean more personal instruction. Choose a maximum average, or leave it open.</p>
+            <legend>What student population feels right?</legend>
+            <p class="quiz-step-hint">Choose an enrollment range that feels right, or leave it open.</p>
             <div class="choice-grid choice-grid-3">
-                <label class="choice-card"><input type="radio" name="class_size_max" value="any" checked><strong>No preference</strong><span>Do not filter by class size.</span></label>
-                <label class="choice-card"><input type="radio" name="class_size_max" value="20"><strong>20 or fewer</strong><span>Small classes matter a lot.</span></label>
-                <label class="choice-card"><input type="radio" name="class_size_max" value="35"><strong>35 or fewer</strong><span>A more personal classroom.</span></label>
-                <label class="choice-card"><input type="radio" name="class_size_max" value="50"><strong>50 or fewer</strong><span>Somewhat smaller is a plus.</span></label>
+                <label class="choice-card"><input type="radio" name="student_size_max" value="any" checked><strong>No preference</strong><span>Do not filter by enrollment.</span></label>
+                <label class="choice-card"><input type="radio" name="student_size_max" value="5000"><strong>5,000 or fewer</strong><span>A small-campus feel.</span></label>
+                <label class="choice-card"><input type="radio" name="student_size_max" value="15000"><strong>15,000 or fewer</strong><span>A medium-sized community.</span></label>
+                <label class="choice-card"><input type="radio" name="student_size_max" value="30000"><strong>30,000 or fewer</strong><span>Keep larger schools in the mix.</span></label>
+                <label class="choice-card"><input type="radio" name="student_size_max" value="30000+"><strong>30,000 or more</strong><span>A large-campus community.</span></label>
+            </div>
+            <div class="importance-item question-importance">
+                <label for="importance-student-size">How important is campus size to you?</label>
+                <input id="importance-student-size" class="importance-slider" type="range" name="importance_student_size" min="1" max="5" step="1" value="3">
+                <div class="importance-ticks" aria-hidden="true"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span></div>
+                <div class="importance-scale"><span>Not important</span><output for="importance-student-size">3/5</output><span>Extremely important</span></div>
             </div>
         </fieldset>
 
@@ -98,6 +196,12 @@
                 <label class="choice-card"><input type="radio" name="party_pref" value="any" checked><strong>Some of both</strong><span>Keep my options open.</span></label>
                 <label class="choice-card"><input type="radio" name="party_pref" value="low"><strong>Low-key</strong><span>Quieter social life is a plus.</span></label>
                 <label class="choice-card"><input type="radio" name="party_pref" value="high"><strong>High-energy</strong><span>I enjoy a lively scene.</span></label>
+            </div>
+            <div class="importance-item question-importance">
+                <label for="importance-party">How important is your preferred social scene?</label>
+                <input id="importance-party" class="importance-slider" type="range" name="importance_party_pref" min="1" max="5" step="1" value="3">
+                <div class="importance-ticks" aria-hidden="true"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span></div>
+                <div class="importance-scale"><span>Not important</span><output for="importance-party">3/5</output><span>Extremely important</span></div>
             </div>
         </fieldset>
 
@@ -110,6 +214,12 @@
                 <label class="choice-card"><input type="radio" name="max_tuition" value="30000"><strong>Up to $30,000</strong><span>Estimated yearly net price.</span></label>
                 <label class="choice-card"><input type="radio" name="max_tuition" value="50000"><strong>Up to $50,000</strong><span>Estimated yearly net price.</span></label>
                 <label class="choice-card"><input type="radio" name="max_tuition" value="75000"><strong>Up to $75,000</strong><span>Estimated yearly net price.</span></label>
+            </div>
+            <div class="importance-item question-importance">
+                <label for="importance-budget">How important is staying within your budget?</label>
+                <input id="importance-budget" class="importance-slider" type="range" name="importance_max_tuition" min="1" max="5" step="1" value="3">
+                <div class="importance-ticks" aria-hidden="true"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span></div>
+                <div class="importance-scale"><span>Not important</span><output for="importance-budget">3/5</output><span>Extremely important</span></div>
             </div>
         </fieldset>
 
@@ -132,6 +242,12 @@
                 <label class="choice-card"><input type="checkbox" name="painPoints" value="too_big"><strong>Very large classes</strong></label>
                 <label class="choice-card"><input type="checkbox" name="painPoints" value="commuter"><strong>A mostly commuter campus</strong></label>
             </div>
+            <div class="importance-item question-importance">
+                <label for="importance-transfer">How important is avoiding these past experiences?</label>
+                <input id="importance-transfer" class="importance-slider" type="range" name="importance_transfer_priorities" min="1" max="5" step="1" value="3">
+                <div class="importance-ticks" aria-hidden="true"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span></div>
+                <div class="importance-scale"><span>Not important</span><output for="importance-transfer">3/5</output><span>Extremely important</span></div>
+            </div>
         </fieldset>
 
         <div class="quiz-navigation">
@@ -146,6 +262,12 @@
     <section id="results" class="mt-8" hidden>
         <p class="text-xs font-semibold uppercase tracking-[0.15em] text-[#506963]">Your shortlist</p>
         <h2 class="font-display mb-4 mt-2 text-2xl font-bold text-slate-900">Colleges to explore</h2>
+        <p id="results-source" class="results-source" role="note"></p>
+        <div class="quiz-ai-controls">
+            <p>Optional AI insights use your quiz answers and shortlist to explain possible fits. Your answers and match details are sent to OpenAI; verify important details with each college.</p>
+            <button id="ai-insights-btn" type="button">Generate AI fit insights</button>
+            <p id="ai-insights-status" role="status" aria-live="polite"></p>
+        </div>
         <div id="results-list"></div>
         <button class="quiz-restart" id="restart-btn" type="button">Adjust my answers</button>
     </section>
@@ -162,7 +284,84 @@ const progressFill = document.querySelector('.quiz-progress-fill');
 const stepLabel = document.getElementById('step-label');
 const stepTopic = document.getElementById('step-topic');
 const statusMessage = document.getElementById('quiz-status');
+const aiInsightsButton = document.getElementById('ai-insights-btn');
+const aiInsightsStatus = document.getElementById('ai-insights-status');
+const preMedOption = document.getElementById('pre-med-option');
+const preMedInput = document.getElementById('pre-med-track');
+const stateOptionList = document.getElementById('state-option-list');
+const stateSearch = document.getElementById('state-search');
+const stateSelectionCount = document.getElementById('state-selection-count');
+const stateSelectionMessage = document.getElementById('state-selection-message');
+const stateChips = document.getElementById('state-chips');
+const MAX_PREFERRED_STATES = 5;
+const STATE_OPTIONS = [
+    ['Alabama', 'AL'], ['Alaska', 'AK'], ['Arizona', 'AZ'], ['Arkansas', 'AR'],
+    ['California', 'CA'], ['Colorado', 'CO'], ['Connecticut', 'CT'], ['Delaware', 'DE'],
+    ['Florida', 'FL'], ['Georgia', 'GA'], ['Hawaii', 'HI'], ['Idaho', 'ID'],
+    ['Illinois', 'IL'], ['Indiana', 'IN'], ['Iowa', 'IA'], ['Kansas', 'KS'],
+    ['Kentucky', 'KY'], ['Louisiana', 'LA'], ['Maine', 'ME'], ['Maryland', 'MD'],
+    ['Massachusetts', 'MA'], ['Michigan', 'MI'], ['Minnesota', 'MN'], ['Mississippi', 'MS'],
+    ['Missouri', 'MO'], ['Montana', 'MT'], ['Nebraska', 'NE'], ['Nevada', 'NV'],
+    ['New Hampshire', 'NH'], ['New Jersey', 'NJ'], ['New Mexico', 'NM'], ['New York', 'NY'],
+    ['North Carolina', 'NC'], ['North Dakota', 'ND'], ['Ohio', 'OH'], ['Oklahoma', 'OK'],
+    ['Oregon', 'OR'], ['Pennsylvania', 'PA'], ['Rhode Island', 'RI'], ['South Carolina', 'SC'],
+    ['South Dakota', 'SD'], ['Tennessee', 'TN'], ['Texas', 'TX'], ['Utah', 'UT'],
+    ['Vermont', 'VT'], ['Virginia', 'VA'], ['Washington', 'WA'], ['West Virginia', 'WV'],
+    ['Wisconsin', 'WI'], ['Wyoming', 'WY']
+];
 let currentStep = 0;
+let lastQuizPayload = null;
+let lastMatches = [];
+
+STATE_OPTIONS.forEach(([name, code]) => {
+    const label = document.createElement('label');
+    label.className = 'state-option';
+    label.dataset.stateName = name.toLowerCase();
+    const checkbox = document.createElement('input');
+    checkbox.type = 'checkbox';
+    checkbox.name = 'preferredStates';
+    checkbox.value = code;
+    const codeEl = document.createElement('span');
+    codeEl.className = 'sp-code';
+    codeEl.textContent = code;
+    const stateName = document.createElement('span');
+    stateName.textContent = name;
+    label.append(checkbox, codeEl, stateName);
+    stateOptionList.appendChild(label);
+});
+
+function updateStateSelection() {
+    const selected = Array.from(form.querySelectorAll('input[name="preferredStates"]:checked'));
+    stateSelectionCount.textContent = `${selected.length} of ${MAX_PREFERRED_STATES} selected`;
+    const atLimit = selected.length >= MAX_PREFERRED_STATES;
+    form.querySelectorAll('input[name="preferredStates"]:not(:checked)').forEach(input => {
+        input.disabled = atLimit;
+    });
+    stateChips.replaceChildren();
+    if (!selected.length) {
+        const empty = document.createElement('span');
+        empty.className = 'sp-empty';
+        empty.textContent = 'Any state (nationwide)';
+        stateChips.appendChild(empty);
+    }
+    selected.forEach(input => {
+        const stateLabel = STATE_OPTIONS.find(([, code]) => code === input.value)[0];
+        const chip = document.createElement('span');
+        chip.className = 'sp-chip';
+        chip.append(stateLabel);
+        const remove = document.createElement('button');
+        remove.type = 'button';
+        remove.setAttribute('aria-label', `Remove ${stateLabel}`);
+        remove.textContent = '×';
+        remove.addEventListener('click', () => {
+            input.checked = false;
+            input.dispatchEvent(new Event('change', { bubbles: true }));
+        });
+        chip.appendChild(remove);
+        stateChips.appendChild(chip);
+    });
+}
+updateStateSelection();
 
 function activeSteps() {
     const isTransfer = form.querySelector('input[name="track"]:checked').value === 'transfer';
@@ -194,22 +393,32 @@ function collectForm() {
     const customMajors = document.getElementById('major-other').value.split(',').map(value => value.trim()).filter(Boolean);
     majors.push(...customMajors);
     const setting = selectedValue('setting');
+    const states = Array.from(form.querySelectorAll('input[name="preferredStates"]:checked'))
+        .map(input => input.value);
     const partyPreference = selectedValue('party_pref');
     const maxTuition = selectedValue('max_tuition');
-    const classSize = selectedValue('class_size_max');
+    const studentSize = selectedValue('student_size_max');
     const residentialRate = selectedValue('residential_rate');
     const painPoints = Array.from(form.querySelectorAll('input[name="painPoints"]:checked')).map(input => input.value);
+    const importance = Object.fromEntries(
+        Array.from(form.querySelectorAll('.importance-slider'))
+            .map(input => [input.name.replace('importance_', ''), Number(input.value)])
+    );
     return {
         track: selectedValue('track'),
         preferences: {
             majors,
+            pre_med_track: preMedInput.checked,
+            states,
             setting: setting === 'any' ? null : setting,
             party_pref: partyPreference === 'any' ? null : partyPreference,
             max_tuition: maxTuition === 'any' ? null : Number(maxTuition),
-            class_size_max: classSize === 'any' ? null : Number(classSize),
+            student_size_max: studentSize === 'any' || studentSize.endsWith('+') ? null : Number(studentSize),
+            student_size_min: studentSize.endsWith('+') ? Number(studentSize.slice(0, -1)) : null,
             residential_rate: residentialRate === 'any' ? null : Number(residentialRate)
         },
-        painPoints
+        painPoints,
+        importance
     };
 }
 
@@ -235,7 +444,7 @@ function renderMatches(matches) {
     if (!matches.length) {
         const empty = document.createElement('p');
         empty.className = 'quiz-result';
-        empty.textContent = 'No college matches are available yet. Try again after the school list has been added.';
+        empty.textContent = 'No college records are available right now. Please try again later.';
         list.appendChild(empty);
         return;
     }
@@ -251,6 +460,34 @@ function renderMatches(matches) {
         score.textContent = `${match.match_percentage}%`;
         heading.append(name, score);
         card.appendChild(heading);
+        if (match.location) {
+            const location = document.createElement('p');
+            location.className = 'quiz-result-location';
+            location.textContent = match.location;
+            card.appendChild(location);
+        }
+        if (match.scorecard_details) {
+            const details = document.createElement('dl');
+            details.className = 'quiz-result-facts';
+            const facts = [
+                ['Undergraduate enrollment', match.scorecard_details.student_size, value => Number(value).toLocaleString()],
+                ['Average net price', match.scorecard_details.net_price, value => formatCurrency(value)],
+                ['In-state tuition', match.scorecard_details.tuition_in_state, value => formatCurrency(value)],
+                ['Out-of-state tuition', match.scorecard_details.tuition_out_state, value => formatCurrency(value)],
+                ['Admission rate', match.scorecard_details.admit_rate, value => `${Math.round(Number(value) * 100)}%`]
+            ];
+            facts.filter(([, value]) => value !== null && value !== undefined)
+                .forEach(([label, value, format]) => {
+                    const item = document.createElement('div');
+                    const term = document.createElement('dt');
+                    const description = document.createElement('dd');
+                    term.textContent = label;
+                    description.textContent = format(value);
+                    item.append(term, description);
+                    details.appendChild(item);
+                });
+            if (details.childElementCount) card.appendChild(details);
+        }
         const explanation = document.createElement('p');
         explanation.textContent = match.explanation;
         card.appendChild(explanation);
@@ -259,17 +496,69 @@ function renderMatches(matches) {
         addList(notes, 'Aligned with your choices', match.matching_factors || []);
         addList(notes, 'Worth looking into', match.mismatches || []);
         card.appendChild(notes);
+        const aiInsight = document.createElement('p');
+        aiInsight.className = 'quiz-ai-insight';
+        aiInsight.dataset.matchId = String(match.id);
+        aiInsight.hidden = true;
+        card.appendChild(aiInsight);
         list.appendChild(card);
     });
+}
+
+function formatCurrency(value) {
+    return new Intl.NumberFormat('en-US', {
+        style: 'currency',
+        currency: 'USD',
+        maximumFractionDigits: 0
+    }).format(Number(value));
 }
 
 backButton.addEventListener('click', () => { currentStep = Math.max(0, currentStep - 1); showStep(); });
 nextButton.addEventListener('click', () => { currentStep = Math.min(activeSteps().length - 1, currentStep + 1); showStep(); });
 form.addEventListener('change', event => {
     if (event.target.name === 'track') showStep();
+    if (event.target.name === 'preferredStates') {
+        if (event.target.checked && form.querySelectorAll('input[name="preferredStates"]:checked').length > MAX_PREFERRED_STATES) {
+            event.target.checked = false;
+            stateSelectionMessage.textContent = `You can choose up to ${MAX_PREFERRED_STATES} states. Uncheck one to choose another.`;
+        } else {
+            stateSelectionMessage.textContent = 'Choose up to five, or leave blank for any state.';
+        }
+        updateStateSelection();
+    }
+    const hasPreMedMajor = form.querySelector('input[name="majorChoice"][data-pre-med-relevant]:checked');
+    preMedOption.hidden = !hasPreMedMajor;
+    if (!hasPreMedMajor) preMedInput.checked = false;
+});
+stateSearch.addEventListener('input', () => {
+    const query = stateSearch.value.trim().toLowerCase();
+    let visible = 0;
+    stateOptionList.querySelectorAll('.state-option').forEach(option => {
+        const match = option.dataset.stateName.includes(query);
+        option.hidden = !match;
+        if (match) visible++;
+    });
+    let none = stateOptionList.querySelector('.sp-none');
+    if (!visible && !none) {
+        none = document.createElement('p');
+        none.className = 'sp-none';
+        none.textContent = 'No states match your search.';
+        stateOptionList.appendChild(none);
+    } else if (visible && none) {
+        none.remove();
+    }
+});
+form.addEventListener('input', event => {
+    if (event.target.matches('.importance-slider')) {
+        event.target.nextElementSibling.nextElementSibling.querySelector('output').value = `${event.target.value}/5`;
+    }
 });
 document.getElementById('restart-btn').addEventListener('click', () => {
     document.getElementById('results').hidden = true;
+    aiInsightsStatus.textContent = '';
+    aiInsightsButton.disabled = false;
+    lastQuizPayload = null;
+    lastMatches = [];
     currentStep = 0;
     showStep();
     window.scrollTo({ top: form.offsetTop - 30, behavior: 'smooth' });
@@ -277,23 +566,67 @@ document.getElementById('restart-btn').addEventListener('click', () => {
 form.addEventListener('submit', async event => {
     event.preventDefault();
     submitButton.disabled = true;
-    statusMessage.textContent = 'Finding colleges that fit your priorities…';
+    statusMessage.textContent = 'Finding colleges that fit your priorities. The first search may take a little longer while school data loads…';
     try {
+        lastQuizPayload = collectForm();
         const response = await fetch('/api/match/', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(collectForm())
+            body: JSON.stringify(lastQuizPayload),
+            signal: AbortSignal.timeout(45000)
         });
-        if (!response.ok) throw new Error('The match service could not complete your request.');
         const data = await response.json();
-        renderMatches(data.matches || []);
+        if (!response.ok) throw new Error(data.detail || 'The match service could not complete your request.');
+        lastMatches = data.matches || [];
+        renderMatches(lastMatches);
+        aiInsightsButton.hidden = lastMatches.length === 0;
+        aiInsightsButton.disabled = false;
+        aiInsightsStatus.textContent = '';
         document.getElementById('results').hidden = false;
-        statusMessage.textContent = '';
+        const resultsSource = document.getElementById('results-source');
+        resultsSource.textContent = data.notice || '';
+        resultsSource.dataset.source = data.source || 'unknown';
+        statusMessage.textContent = data.notice || '';
         window.setTimeout(() => document.getElementById('results').scrollIntoView({ behavior: 'smooth', block: 'start' }), 50);
     } catch (error) {
-        statusMessage.textContent = error.message || 'Something went wrong. Please try again.';
+        statusMessage.textContent = error.name === 'TimeoutError'
+            ? 'The school data service is taking too long to respond. Please try again in a moment.'
+            : error.message || 'Something went wrong. Please try again.';
     } finally {
         submitButton.disabled = false;
+    }
+});
+
+aiInsightsButton.addEventListener('click', async () => {
+    if (!lastQuizPayload || !lastMatches.length) return;
+    aiInsightsButton.disabled = true;
+    aiInsightsStatus.textContent = 'Generating insights for your matches…';
+    try {
+        const response = await fetch('/api/insights/', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                ...lastQuizPayload,
+                matches: lastMatches
+            }),
+            signal: AbortSignal.timeout(25000)
+        });
+        const data = await response.json();
+        if (!response.ok) throw new Error(data.detail || 'AI insights could not be generated.');
+        document.querySelectorAll('.quiz-ai-insight').forEach(element => {
+            const insight = data.insights[String(element.dataset.matchId)];
+            if (insight) {
+                element.textContent = `AI fit insight: ${insight}`;
+                element.hidden = false;
+            }
+        });
+        aiInsightsStatus.textContent = 'AI fit insights are ready.';
+    } catch (error) {
+        aiInsightsStatus.textContent = error.name === 'TimeoutError'
+            ? 'AI insights took too long to generate. Please try again.'
+            : error.message || 'AI insights could not be generated.';
+    } finally {
+        aiInsightsButton.disabled = false;
     }
 });
 

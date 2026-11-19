@@ -1,0 +1,157 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Search and compare universities using institution data from College Scorecard or local records.">
+    <title>University Directory | Unify</title>
+    <link rel="icon" type="image/svg+xml" href="{% static 'images/unify-mark.svg' %}">
+    <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{% static 'css/site.css' %}?v=20261030-darkmenu">
+    <script src="{% static 'js/site.js' %}" defer></script>
+    <style>body { font-family: 'Inter', sans-serif; } .font-display { font-family: 'Fraunces', Georgia, serif; }</style>
+</head>
+<body class="university-directory-page antialiased">
+    <header class="sticky top-0 z-10 border-b border-white/10 backdrop-blur-sm">
+        <div class="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-y-3 px-4 py-4 sm:px-6">
+            <a href="/" class="font-display flex items-center gap-2.5 text-xl font-semibold">
+                <img src="{% static 'images/unify-mark.svg' %}" alt="" aria-hidden="true" class="h-8 w-8">
+                Unify<sup class="ml-0.5 text-[10px]">™</sup>
+            </a>
+            <nav aria-label="Main navigation" class="order-3 flex w-full flex-wrap items-center gap-x-5 gap-y-2 text-sm text-slate-300 md:order-none md:w-auto">
+                <a href="/" class="hover:text-white">Home</a>
+                <a href="/about/" class="hover:text-white">About</a>
+                <a href="/quiz/" class="hover:text-white">Quiz</a>
+            </nav>
+            <a href="/quiz/" class="rounded-md bg-[#E4B75C] px-4 py-2 text-sm font-semibold text-[#18271F] hover:bg-[#F0CC7E]">Take the quiz</a>
+        </div>
+    </header>
+    <main class="mx-auto max-w-6xl px-5 py-10 sm:px-6 sm:py-14">
+        <p class="text-xs font-semibold uppercase tracking-[0.16em] text-[#B4D9C3]">University directory</p>
+        <h1 class="font-display mt-3 text-4xl font-semibold text-[#F4F2EA] sm:text-5xl">Find a school to explore.</h1>
+        <p class="mt-3 max-w-2xl text-sm leading-6 text-[#B7C1CB]">Search by name or location, then narrow the list by campus setting and estimated net price.</p>
+
+        <form id="directory-filters" action="/universities/" method="get" class="mt-8 grid gap-3 rounded-lg border border-white/10 bg-[#121922] p-4 sm:grid-cols-[minmax(0,1fr)_190px_190px_auto] sm:items-end">
+            <div>
+                <label for="directory-query" class="mb-2 block text-xs font-semibold text-[#E7EDF5]">School or location</label>
+                <input id="directory-query" name="q" type="search" placeholder="Try a university or city" class="min-h-11 w-full rounded-md border border-white/20 bg-[#101720] px-3 text-sm text-white placeholder:text-slate-400 focus:border-[#8BCDB7] focus:outline-none">
+            </div>
+            <div>
+                <label for="directory-setting" class="mb-2 block text-xs font-semibold text-[#E7EDF5]">Campus setting</label>
+                <select id="directory-setting" name="setting" class="min-h-11 w-full rounded-md border border-white/20 bg-[#101720] px-3 text-sm text-white focus:border-[#8BCDB7] focus:outline-none">
+                    <option value="">Any setting</option>
+                    <option value="urban">Urban</option>
+                    <option value="suburban">Suburban</option>
+                    <option value="rural">Rural</option>
+                </select>
+            </div>
+            <div>
+                <label for="directory-price" class="mb-2 block text-xs font-semibold text-[#E7EDF5]">Max net price</label>
+                <select id="directory-price" name="max_price" class="min-h-11 w-full rounded-md border border-white/20 bg-[#101720] px-3 text-sm text-white focus:border-[#8BCDB7] focus:outline-none">
+                    <option value="">No price limit</option>
+                    <option value="15000">$15,000</option>
+                    <option value="25000">$25,000</option>
+                    <option value="40000">$40,000</option>
+                    <option value="60000">$60,000</option>
+                </select>
+            </div>
+            <button type="submit" class="min-h-11 rounded-md bg-[#2D806F] px-5 text-sm font-semibold text-white hover:bg-[#379783]">Search</button>
+        </form>
+
+        <div class="mt-7 flex flex-wrap items-center justify-between gap-3 border-b border-white/10 pb-3">
+            <p id="directory-status" class="text-sm text-[#B7C1CB]" role="status" aria-live="polite">Loading universities…</p>
+            <p id="directory-source" class="text-xs text-[#B4D9C3]"></p>
+        </div>
+        <section id="directory-results" class="mt-2" aria-label="Universities" aria-live="polite"></section>
+        <nav class="mt-6 flex items-center justify-between" aria-label="University pages">
+            <button id="directory-previous" type="button" class="rounded-md border border-white/20 px-4 py-2 text-sm font-semibold text-[#E7EDF5] hover:bg-white/10 disabled:cursor-not-allowed disabled:opacity-50" disabled>Previous</button>
+            <span id="directory-page" class="text-xs text-[#B7C1CB]"></span>
+            <button id="directory-next" type="button" class="rounded-md border border-white/20 px-4 py-2 text-sm font-semibold text-[#E7EDF5] hover:bg-white/10 disabled:cursor-not-allowed disabled:opacity-50" disabled>Next</button>
+        </nav>
+    </main>
+    <script>
+    const filterForm = document.getElementById('directory-filters');
+    const queryInput = document.getElementById('directory-query');
+    const settingInput = document.getElementById('directory-setting');
+    const priceInput = document.getElementById('directory-price');
+    const resultsContainer = document.getElementById('directory-results');
+    const statusText = document.getElementById('directory-status');
+    const sourceText = document.getElementById('directory-source');
+    const pageText = document.getElementById('directory-page');
+    const previousButton = document.getElementById('directory-previous');
+    const nextButton = document.getElementById('directory-next');
+    const initialParams = new URLSearchParams(window.location.search);
+    let currentPage = Math.max(1, Number(initialParams.get('page')) || 1);
+    let lastPage = 1;
+
+    queryInput.value = initialParams.get('q') || '';
+    settingInput.value = initialParams.get('setting') || '';
+    priceInput.value = initialParams.get('max_price') || '';
+
+    function renderSchool(school) {
+      const row = document.createElement('article');
+      row.className = 'grid gap-2 border-b border-white/10 py-5 sm:grid-cols-[minmax(0,1fr)_170px_190px] sm:items-center';
+      const identity = document.createElement('div');
+      const name = document.createElement('h2');
+      name.className = 'font-display text-xl font-medium text-[#F4F2EA]';
+      name.textContent = school.name;
+      const location = document.createElement('p');
+      location.className = 'mt-1 text-sm text-[#B7C1CB]';
+      location.textContent = school.location || 'Location not reported';
+      identity.append(name, location);
+      const setting = document.createElement('p');
+      setting.className = 'text-sm text-[#D8E4DF]';
+      setting.textContent = school.setting ? `${school.setting} campus` : 'Setting not reported';
+      const price = document.createElement('p');
+      price.className = 'text-sm font-semibold text-[#E4B75C]';
+      price.textContent = school.net_price == null ? 'Net price not reported' : `Net price $${Number(school.net_price).toLocaleString()}`;
+      row.append(identity, setting, price);
+      return row;
+    }
+
+    async function loadUniversities() {
+      statusText.textContent = 'Loading universities…';
+      sourceText.textContent = '';
+      resultsContainer.replaceChildren();
+      const params = new URLSearchParams({ page: String(currentPage), page_size: '24' });
+      if (queryInput.value.trim()) params.set('q', queryInput.value.trim());
+      if (settingInput.value) params.set('setting', settingInput.value);
+      if (priceInput.value) params.set('max_price', priceInput.value);
+      window.history.replaceState({}, '', `/universities/?${params}`);
+
+      try {
+        const response = await fetch(`/api/colleges/?${params}`, { headers: { Accept: 'application/json' } });
+        const data = await response.json();
+        if (!response.ok) throw new Error(data.detail || 'University data could not be loaded.');
+        lastPage = data.pages;
+        data.results.forEach(school => resultsContainer.append(renderSchool(school)));
+        statusText.textContent = data.count ? `${data.count.toLocaleString()} universities` : 'No universities match those filters.';
+        sourceText.textContent = data.source === 'college_scorecard'
+          ? 'U.S. Department of Education College Scorecard'
+          : 'Local institution records; not live Scorecard data';
+        pageText.textContent = data.pages ? `Page ${data.page} of ${data.pages}` : '';
+        previousButton.disabled = currentPage <= 1;
+        nextButton.disabled = currentPage >= lastPage;
+      } catch (error) {
+        statusText.textContent = error.message;
+        pageText.textContent = '';
+        previousButton.disabled = true;
+        nextButton.disabled = true;
+      }
+    }
+
+    filterForm.addEventListener('submit', event => {
+      event.preventDefault();
+      currentPage = 1;
+      loadUniversities();
+    });
+    previousButton.addEventListener('click', () => { currentPage -= 1; loadUniversities(); });
+    nextButton.addEventListener('click', () => { currentPage += 1; loadUniversities(); });
+    loadUniversities();
+    </script>
+</body>
+</html>

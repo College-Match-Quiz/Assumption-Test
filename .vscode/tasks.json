@@ -1,0 +1,17 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"label": "Django development server",
+			"type": "shell",
+			"command": "py",
+			"args": [
+				"manage.py",
+				"runserver"
+			],
+			"isBackground": true,
+			"problemMatcher": [],
+			"group": "build"
+		}
+	]
+}

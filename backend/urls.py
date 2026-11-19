@@ -1,11 +1,9 @@
 from django.contrib import admin
-from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.views import LoginView
-from django.urls import path, include, reverse_lazy
-from django.views.generic import CreateView
+from django.urls import path, include
 
 from customer_service_helpsdesk.helpdesk import helpdesk_page
-from home.views import home_page, about_page, quiz_page, terms_page
+from home.views import SignUpView, about_page, home_page, quiz_page, terms_page, universities_page
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -14,7 +12,8 @@ urlpatterns = [
     path('terms/', terms_page, name='terms'),
     path('contact/', helpdesk_page, name='contact'),
     path('login/', LoginView.as_view(template_name='login.html', next_page='/', redirect_authenticated_user=True), name='login'),
-    path('signup/', CreateView.as_view(form_class=UserCreationForm, template_name='signup.html', success_url=reverse_lazy('login')), name='signup'),
+    path('signup/', SignUpView.as_view(), name='signup'),
     path('quiz/', quiz_page, name='quiz'),
+    path('universities/', universities_page, name='universities'),
     path('api/', include('api.urls')),
 ]
